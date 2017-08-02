@@ -71,6 +71,7 @@ export EXECUTABLE           = sr
 export UNIT_TEST_EXEC 		= unit-tests.run
 export UNIT_TEST_HW_EXEC 	= unit-tests-hardware.run
 export INTEGRATION_TEST_EXEC_ASPIRE = integration-tests-ASPire.run
+export CURRENT_SENSOR_TEST_EXEC = current_sensor_test.run
 
 export OBJECT_FILE          = $(BUILD_DIR)/objects.tmp
 
@@ -135,7 +136,7 @@ export HW_SERVICES_JANET_SRC = Hardwares/MaestroController/MaestroController.cpp
 export HW_NODES_ALL_SRC		= Hardwares/HMC6343Node.cpp Hardwares/GPSDNode.cpp
 
 export HW_NODES_ASPIRE_SRC 	= Hardwares/ActuatorNodeASPire.cpp \
-                            	Hardwares/CANFeedbackReceiver.cpp Hardwares/CANWindsensorNode.cpp
+                            	Hardwares/CANFeedbackReceiver.cpp Hardwares/CANWindsensorNode.cpp Hardwares/Adafruit_INA219.cpp
 
 export HW_NODES_JANET_SRC 	= Hardwares/ActuatorNode.cpp Hardwares/CV7Node.cpp Hardwares/ArduinoNode.cpp
 
@@ -170,6 +171,10 @@ unit_tests: $(BUILD_DIR)
 ## Build the integration tests for ASPire
 integration_tests_ASPire: $(BUILD_DIR)
 	$(MAKE) -f integration_tests_ASPire.mk
+	
+## Build the current sensor tests
+current_sensor_test: $(BUILD_DIR)
+	$(MAKE) -f current_sensor_test.mk
 
 
 #  Create the directories needed
