@@ -10,12 +10,12 @@
 #		* ASPire: Build for ASPire
 #		* Janet: Build for Janet
 #
-#   External Variables 
+#   External Variables
 #   	* USE_SIM: Indicates if the simulator is to be used, 0 for off, 1 for on.
 #		* USE_LNM: 1: Local Navigation Module (voter system), 0: Line-follow (default)
 #
 #   Example
-#   	Build the Janet navigation system with simulator interface and local navigation module 
+#   	Build the Janet navigation system with simulator interface and local navigation module
 #   	'make Janet USE_SIM=1 USE_LNM=1'
 #
 # For the default code:   'make'
@@ -31,7 +31,7 @@ export USE_LNM = 0
 # Tools
 ###############################################################################
 
-export CPPFLAGS             = -g -Wall -pedantic -Werror -std=gnu++14
+export CPPFLAGS             = -g -Wall -pedantic -Werror -std=gnu++14 -Wno-psabi
 export LIBS                 = -lsqlite3 -lgps -lrt -lcurl -lpthread -lwiringPi -lncurses
 
 ifeq ($(TOOLCHAIN),1)
@@ -71,7 +71,10 @@ export EXECUTABLE           = sr
 export UNIT_TEST_EXEC 		= unit-tests.run
 export UNIT_TEST_HW_EXEC 	= unit-tests-hardware.run
 export INTEGRATION_TEST_EXEC_ASPIRE = integration-tests-ASPire.run
-export CURRENT_SENSOR_TEST_EXEC = current_sensor_test.run
+export CURRENT_SENSOR_TEST_EXEC = current-sensor-test.run
+export HTTP_SYNC_TEST_EXEC	= HTTPSync-test.run
+export AIS_TEST_EXEC		= ais-integration-tests.run
+export MARINE_SENSOR_TEST_EXCE = marine-sensor-test.run
 
 export OBJECT_FILE          = $(BUILD_DIR)/objects.tmp
 
@@ -85,9 +88,9 @@ DATABASE_SRC				= DataBase/DBHandler.cpp DataBase/DBLogger.cpp DataBase/DBLogger
 
 HTTP_SYNC_SRC        		= HTTPSync/HTTPSyncNode.cpp
 
-LOW_LEVEL_CONTROLLERS 		= SystemServices/WingsailControl.cpp SystemServices/CourseRegulator.cpp SystemServices/SoftsailControl.cpp \
-								LowLevelControllers/LowLevelControllerNodeASPire.cpp LowLevelControllers/LowLevelControllerNodeJanet.cpp \
-								LowLevelControllers/WindVaneController.cpp LowLevelControllers/LowLevelController.cpp
+LOW_LEVEL_CONTROLLERS 		= LowLevelControllers/LowLevelController.cpp \
+								LowLevelControllers/CourseRegulatorNode.cpp LowLevelControllers/SailControlNode.cpp \
+								LowLevelControllers/WingsailControlNode.cpp
 
 MATH_SRC             		= Math/CourseCalculation.cpp Math/CourseMath.cpp Math/Utility.cpp
 
@@ -118,25 +121,28 @@ export LNM_SRC              = $(LNM_DIR)/ASRCourseBallot.cpp $(LNM_DIR)/ASRArbit
 								$(LNM_DIR)/Voters/ProximityVoter.cpp
 
 # Obstacles detection
-export COLLIDABLE_MGR_SRC	= WorldState/CollidableMgr/CollidableMgr.cpp
+export COLLIDABLE_MGR_SRC	= WorldState/CollidableMgr/CollidableMgr.cpp WorldState/AISProcessing.cpp
 
 # Simulator
 export SIMULATOR_SRC        = Simulation/SimulationNode.cpp
 
+
 # Hardware services
-export HW_SERVICES_ALL_SRC	= Hardwares/i2ccontroller/I2CController.cpp
+export HW_SERVICES_ALL_SRC	= Hardwares/i2ccontroller/I2CController.cpp Hardwares/AtlasScientificController/AtlasScientific.cpp
 
 export CAN_SERVICES_SRC 	= Hardwares/CAN_Services/CANPGNReceiver.cpp Hardwares/CAN_Services/CANService.cpp \
 							   	Hardwares/CAN_Services/mcp2515.cpp Hardwares/CAN_Services/MsgFunctions.cpp \
 							   	Hardwares/CAN_Services/CANFrameReceiver.cpp
+
+export HW_SERVICES_ASPire_SRC = Hardwares/Adafruit_INA219.cpp
 
 export HW_SERVICES_JANET_SRC = Hardwares/MaestroController/MaestroController.cpp
 
 # Hardware nodes
 export HW_NODES_ALL_SRC		= Hardwares/HMC6343Node.cpp Hardwares/GPSDNode.cpp
 
-export HW_NODES_ASPIRE_SRC 	= Hardwares/ActuatorNodeASPire.cpp \
-                            	Hardwares/CANFeedbackReceiver.cpp Hardwares/CANWindsensorNode.cpp Hardwares/Adafruit_INA219.cpp
+export HW_NODES_ASPIRE_SRC 	= Hardwares/ActuatorNodeASPire.cpp Hardwares/CANAISNode.cpp Hardwares/CANSolarTrackerNode.cpp\
+                            	Hardwares/CANWindsensorNode.cpp Hardwares/CANArduinoNode.cpp Hardwares/MarineSensorNode.cpp
 
 export HW_NODES_JANET_SRC 	= Hardwares/ActuatorNode.cpp Hardwares/CV7Node.cpp Hardwares/ArduinoNode.cpp
 
@@ -157,11 +163,11 @@ all:
 
 ## Build the control system for ASPire
 ASPire: $(BUILD_DIR)
-	$(MAKE) -f ASPire.mk -j
+	$(MAKE) -f ASPire.mk
 
 ## Build the control system for Janet
 Janet: $(BUILD_DIR)
-	$(MAKE) -f Janet.mk -j
+	$(MAKE) -f Janet.mk
 
 ## Build the unit tests
 unit_tests: $(BUILD_DIR)
@@ -171,11 +177,19 @@ unit_tests: $(BUILD_DIR)
 ## Build the integration tests for ASPire
 integration_tests_ASPire: $(BUILD_DIR)
 	$(MAKE) -f integration_tests_ASPire.mk
+	$(MAKE) -f ais_integration_test.mk
 	
 ## Build the current sensor tests
 current_sensor_test: $(BUILD_DIR)
 	$(MAKE) -f current_sensor_test.mk
+	
+## Builid the test for the marine sensors
+marine_sensor_test: $(BUILD_DIR)
+	$(MAKE) -f marine_sensor_test.mk	
 
+## Build HTTPSync Test
+HTTPSync_test: $(BUILD_DIR)
+	$(MAKE) -f HTTP_sync_test.mk
 
 #  Create the directories needed
 $(BUILD_DIR):
@@ -188,8 +202,11 @@ clean:
 	-@rm -rd $(BUILD_DIR)
 	-@rm $(EXECUTABLE)
 	-@rm $(UNIT_TEST_EXEC)
-	-@rm $(HARDWARE_TEST_EXEC)
+	-@rm $(UNIT_TEST_HW_EXEC)
 	-@rm $(INTEGRATION_TEST_EXEC_ASPIRE)
+	-@rm $(INTEGRATION_TEST_EXEC_ASPIRE)
+	-@rm $(AIS_TEST_EXEC)
+	-@rm $(MARINE_SENSOR_TEST_EXCE)
 	-@$(MAKE) -C Tests clean
 	@echo DONE
 

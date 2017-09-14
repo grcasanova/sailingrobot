@@ -13,12 +13,19 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
 
-#include "MessageBus/Node.h"
-#include "Messages/GPSDataMsg.h"
 #include "DataBase/DBHandler.h"
 #include "Math/CourseMath.h"
+#include "Math/Utility.h"
+#include "MessageBus/Node.h"
+#include "Messages/StateMessage.h"
+#include "Messages/WaypointDataMsg.h"
+#include "Messages/ServerWaypointsReceivedMsg.h"
+#include "Messages/CourseDataMsg.h"
 #include "SystemServices/Timer.h"
+#include "SystemServices/Logger.h"
 
 
 class WaypointMgrNode : public Node {
@@ -31,7 +38,7 @@ public:
 	void processMessage(const Message* message);
 
 private:
-	void processGPSMessage(GPSDataMsg* msg);
+	void processVesselStateMessage(StateMessage* msg);
     bool waypointReached();
 
 	///----------------------------------------------------------------------------------
@@ -39,27 +46,28 @@ private:
  	///----------------------------------------------------------------------------------
     void sendMessage();
     bool harvestWaypoint();
+    void sendNavigationInformation();
 
     DBHandler &m_db;
     bool writeTime;
 
     int     m_nextId;
-    double  m_nextLongitude;
-    double  m_nextLatitude;
-    int     m_nextDeclination;
-    int     m_nextRadius;
-    int     m_nextStayTime;
+    double  m_nextLongitude;	// units : North(+) or South(-) [0-90]
+    double  m_nextLatitude;		// units : East(+) or West(-)  [0-180]
+    int     m_nextDeclination;	// units : degrees
+    int     m_nextRadius;		// units : meters
+    int     m_nextStayTime;		// units : seconds
 
     int     m_prevId;
-    double  m_prevLongitude;
-    double  m_prevLatitude;
-    int     m_prevDeclination;
-    int     m_prevRadius;
+    double  m_prevLongitude;	// units : North(+) or South(-) [0-90]
+    double  m_prevLatitude;		// units : East(+) or West(-)  [0-180]
+    int     m_prevDeclination;	// units : degrees
+    int     m_prevRadius;		// units : meters
 
-    double  m_gpsLongitude;
-    double  m_gpsLatitude;
+    double  m_vesselLongitude;  // units : North(+) or South(-) [0-90]
+    double  m_vesselLatitude;   // units : East(+) or West(-)  [0-180]
 
-    Timer   m_waypointTimer;
-    Timer   m_routeTime;
-    double  m_totalTime;
+    Timer   m_waypointTimer;	// units : seconds
+    Timer   m_routeTime;		// units : seconds
+    double  m_totalTime;		// units : seconds
 };

@@ -19,20 +19,20 @@ class WindStateNodeSuite : public CxxTest::TestSuite {
 public:
 
 	WindStateNode* windStateNode;
+	DBHandler* dbhandler;
   	std::thread* thr;
 	MessageVerifier* verifier;
 	MessageLogger* logger;
 
-	float compassHeading = 33;
-	double latitude = 48;
-	double longitude = 13;
-	double gpsSpeed = 34;
-	double gpsCourse = 21;
+	float vesselHeading = 350;
+    double vesselLat = 0;
+    double vesselLon = 0;
+	float vesselSpeed = 3;
+	float vesselCourse = 0;
 
-	float windDir = 30;
-	float windSpeed = 3;
-	float windTemp = 90;
-	int twdSize = 100;
+	float windSpeed = 4;
+	float windDirection = 10;
+	float windTemp =0;
 
 	int testCount = 0;
 
@@ -49,55 +49,52 @@ public:
 	void setUp() {
 		if(windStateNode == 0){
 			verifier = new MessageVerifier(msgBus());
+			dbhandler = new DBHandler("../asr.db");
 			logger = new MessageLogger(msgBus());
-			windStateNode = new WindStateNode(msgBus(), twdSize);
+			windStateNode = new WindStateNode(msgBus());
 			thr = new std::thread(runMessageLoop);
 		}
 		testCount++;
 	}
 
 	void tearDown() {
-		if(testCount == WIND_STATE_TEST_COUNT) {
+		if(testCount == WIND_STATE_TEST_COUNT)
+		{
+			msgBus().stop();
+			thr->join();
+			delete thr;
+			delete logger;
 			delete verifier;
 			delete windStateNode;
+			delete dbhandler;
 		}
 	}
 
-	void test_NodeSendsMessage() {
-	
-		msgBus().sendMessage(std::make_unique<StateMessage>(compassHeading,latitude,longitude,gpsSpeed,gpsCourse));
-		msgBus().sendMessage(std::make_unique<WindDataMsg>(windDir,windSpeed,windTemp));
-		msgBus().sendMessage(std::make_unique<StateMessage>(compassHeading,latitude,longitude,gpsSpeed,gpsCourse));
-
+	void test_NodeSendsMessage()
+	{
+		msgBus().sendMessage(std::make_unique<WindDataMsg>(windDirection,windSpeed,windTemp));
+		msgBus().sendMessage(std::make_unique<StateMessage>(vesselHeading,vesselLat,vesselLon,vesselSpeed,vesselCourse));
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(WIND_STATE_WAIT_TIME));
 		TS_ASSERT(logger->windStateReceived());
-
 	}
 
-	void test_verifyCorrectMsgData() {
-
-
-		msgBus().sendMessage(std::make_unique<StateMessage>(compassHeading,latitude,longitude,gpsSpeed,gpsCourse));
-		msgBus().sendMessage(std::make_unique<WindDataMsg>(windDir,windSpeed,windTemp));
-		msgBus().sendMessage(std::make_unique<StateMessage>(compassHeading,latitude,longitude,gpsSpeed,gpsCourse));
-		std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+	void test_verifyCorrectMsgData()
+	{
+		msgBus().sendMessage(std::make_unique<WindDataMsg>(windDirection,windSpeed,windTemp));
+		msgBus().sendMessage(std::make_unique<StateMessage>(vesselHeading,vesselLat,vesselLon,vesselSpeed,vesselCourse));
+		std::this_thread::sleep_for(std::chrono::milliseconds(WIND_STATE_WAIT_TIME));
 
 		TS_ASSERT(logger->windStateReceived());
 
-		std::vector<float> twd;
-		double trueWindSpeed = Utility::calculateTrueWindSpeed(windDir, windSpeed, gpsSpeed, compassHeading);
-		double trueWindDirection = Utility::getTrueWindDirection(windDir, windSpeed, gpsSpeed, compassHeading, twd, twdSize);
+		float apparentWindSpeed = 4;
+		float apparentWindDirection = 10;
 
-		double apparentWindSpeed;
-		double apparentWindDirection;
-
-		Utility::calculateApparentWind(windDir,windSpeed,gpsSpeed,
-			compassHeading,trueWindDirection,apparentWindSpeed,apparentWindDirection);
+		float trueWindSpeed = 1;
+		float trueWindDirection = 0;
 
 		WindStateMsg windStateMsg(trueWindSpeed,trueWindDirection,apparentWindSpeed,apparentWindDirection);
-	
+
 		TS_ASSERT(verifier->verifyWindStateMsg(&windStateMsg));
 	}
-
 };
