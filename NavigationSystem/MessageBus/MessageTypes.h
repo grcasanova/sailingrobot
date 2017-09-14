@@ -22,6 +22,7 @@
 enum class MessageType {
 	DataRequest = 0,
 	WindData,
+    CurrentData,
 	CompassData,
 	GPSData,
 	ServerConfigsReceived,
@@ -58,6 +59,8 @@ inline std::string msgToString(MessageType msgType)
 		return "DataRequest";
 		case MessageType::WindData:
 		return "WindData";
+        case MessageType::CurrentData:
+		return "CurrentData";
 		case MessageType::CompassData:
 		return "CompassData";
 		case MessageType::GPSData:
