@@ -14,17 +14,18 @@
 
 #pragma once
 
-#include "Messages/CurrentDataMsg.h"
 #include "SystemServices/Timer.h"
 #include "MessageBus/Message.h"
 #include "DataBase/DBHandler.h"
 #include "MessageBus/ActiveNode.h"
 #include "SystemServices/Logger.h"
+#include "Messages/CurrentDataMsg.h"
 
 #include <chrono>
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <type_traits>
 
 class PowerManagerNode : public ActiveNode {
 public:
@@ -52,14 +53,14 @@ private:
   void updateConfigsFromDB();
 
   /*
-  * For future use
+  * Checks incoming current values to detect burn-outs
   */
-  void doStuff();
+  void checkCurrentLimits();
 
   /*
   * Gets to process the message if the message received comes from the current sensor
   */
-  void processSensorMessage(CurrentSensorData* msg);
+  void processSensorMessage(CurrentDataMsg* msg);
 
   /*
   * The function that thread works on
@@ -70,7 +71,7 @@ private:
   * Private variables
   */
   float m_current;
-  float m_sensor;
+  float m_voltage;
   SensedElement m_element;
 
   double m_LoopTime;

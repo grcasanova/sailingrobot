@@ -23,6 +23,7 @@ enum class NodeID {
 	None = 0,
 	MessageLogger,
 	WindSensor,
+    CurrentSensor,
 	Compass,
 	GPS,
 	HTTPSync,
@@ -58,7 +59,8 @@ enum class NodeID {
 	CANAIS,
 	AISProcessing,
 	MarineSensor,
-    CameraProcessingNode
+    CameraProcessingNode,
+    PowerManagerNode
 };
 
 inline std::string nodeToString(NodeID id)
@@ -145,6 +147,8 @@ inline std::string nodeToString(NodeID id)
 		return "MarineSensor";
         case NodeID::CameraProcessingNode:
         return "CameraProcessingNode";
+        case NodeID::PowerManagerNode:
+        return "PowerManagerNode";
 	}
 	return "";
 }

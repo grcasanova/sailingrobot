@@ -13,8 +13,8 @@
 
 #include "PowerManagerNode.h"
 
-/** @todo tune-up values */
-enum MaxCurrent : int { MAX_CURRENT_NAVIGATION_UNIT = 1000, MAX_CURRENT_ACTUATOR_UNIT, MAX_CURRENT_WINDVANE_ACTUATOR, MAX_CURRENT_SAILDRIVE_ACTUATOR, MAX_CURRENT_RUDDER_ACTUATOR };
+/** @todo tune-up values and set the enum as a class */
+enum MaxCurrent { MAX_CURRENT_SAILDRIVE = 1000, MAX_CURRENT_WINDWANE_SWITCH, MAX_CURRENT_WINDVANE_ANGLE, MAX_CURRENT_ACTUATOR_UNIT, MAX_CURRENT_NAVIGATION_UNIT };
 
 PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
   : ActiveNode(NodeID::PowerManagerNode, msgBus), m_LoopTime(0.5), m_db(dbhandler) {
@@ -59,24 +59,24 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     // Print sensed element in a human-friendly way
     switch(m_element)
     {
-        case NAVIGATION_UNIT:
-            char* elem = "navigation unit";
+        case SAILDRIVE:
+            char* elem = "saildrive";
+            break;
+            
+        case WINDWANE_SWITCH:
+            char* elem = "windvane switch";
+            break;
+            
+        case WINDVANE_ANGLE:
+            char* elem = "windvane angle";
             break;
             
         case ACTUATOR_UNIT:
             char* elem = "actuator unit";
             break;
             
-        case WINDVANE_ACTUATOR:
-            char* elem = "windvane actuator";
-            break;
-            
-        case SAILDRIVE_ACTUATOR:
-            char* elem = "saildrive actuator";
-            break;
-            
-        case RUDDER_ACTUATOR:
-            char* elem = "rudder actuator";
+        case NAVIGATION_UNIT:
+            char* elem = "navigation unit";
             break;
         
         default:
@@ -84,9 +84,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
             break;
     }
     
-    Logger::info("current %lf (mA) and voltage %lf (mV) for the element %s", m_current, m_voltage, elem);
-#else
-    
+    Logger::info("current %lf (mA) and voltage %lf (mV) for the element %s", m_current, m_voltage, elem);    
 #endif
   }
   
@@ -94,32 +92,29 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     runThread(PowerManagerNodeThreadFunc);
   }
   
-  void PowerManagerNode::doStuff() {
+  /** @todo to be implemented */
+  void PowerManagerNode::checkCurrentLimits() {
       switch(m_element)
         {
-            case NAVIGATION_UNIT:
-                if(m_current > MAX_CURRENT_NAVIGATION_UNIT)
-                    throw std::exception("burn-out detected in the NAVIGATION UNIT!");
+            case SAILDRIVE:
+                if(m_current > MAX_CURRENT_SAILDRIVE)
+                    // Do smt
+                break;
+                
+            case WINDWANE_SWITCH:
+                if(m_current > MAX_CURRENT_WINDWANE_SWITCH)
+                break;
+                
+            case WINDVANE_ANGLE:
+                if(m_current > MAX_CURRENT_WINDVANE_ANGLE)
                 break;
                 
             case ACTUATOR_UNIT:
                 if(m_current > MAX_CURRENT_ACTUATOR_UNIT)
-                    throw std::exception("burn-out detected in the ACTUATOR UNIT!");
                 break;
                 
-            case WINDVANE_ACTUATOR:
-                if(m_current > MAX_CURRENT_WINDVANE_ACTUATOR)
-                    throw std::exception("burn-out detected in the WINDVANE ACTUATOR!");
-                break;
-                
-            case SAILDRIVE_ACTUATOR:
-                if(m_current > MAX_CURRENT_SAILDRIVE_ACTUATOR)
-                    throw std::exception("burn-out detected in the SAILDRIVE ACTUATOR!");
-                break;
-                
-            case RUDDER_ACTUATOR:
-                if(m_current > MAX_CURRENT_RUDDER_ACTUATOR)
-                    throw std::exception("burn-out detected in the RUDDER ACTUATOR!");
+            case NAVIGATION_UNIT:
+                if(m_current > MAX_CURRENT_NAVIGATION_UNIT)
                 break;
             
             default:
@@ -135,7 +130,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
 
     while(true) {
       node->m_lock.lock();
-      node->doStuff();
+      node->checkCurrentLimits();
       node->m_lock.unlock();
       timer.sleepUntil(node->m_LoopTime);
       timer.reset();

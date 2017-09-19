@@ -104,7 +104,7 @@ NAVIGATION_SRC				= Navigation/WaypointMgrNode.cpp
 SYSTEM_SERVICES_SRC  		= SystemServices/Logger.cpp SystemServices/SysClock.cpp SystemServices/Timer.cpp
 
 WORLD_STATE_SRC				= WorldState/VesselStateNode.cpp WorldState/StateEstimationNode.cpp \
-								WorldState/WindStateNode.cpp
+								WorldState/WindStateNode.cpp WorldState/PowerManagerNode.cpp
 
 export CORE_SRC 			= $(DATABASE_SRC) $(HTTP_SYNC_SRC) $(LOW_LEVEL_CONTROLLERS) $(MATH_SRC) \
 								$(MESSAGE_BUS_SRC) $(NETWORK_SRC) $(NAVIGATION_SRC) $(SYSTEM_SERVICES_SRC) \
@@ -134,15 +134,14 @@ export CAN_SERVICES_SRC 	= Hardwares/CAN_Services/CANPGNReceiver.cpp Hardwares/C
 							   	Hardwares/CAN_Services/mcp2515.cpp Hardwares/CAN_Services/MsgFunctions.cpp \
 							   	Hardwares/CAN_Services/CANFrameReceiver.cpp
 
-export HW_SERVICES_ASPire_SRC = Hardwares/Adafruit_INA219.cpp
-
 export HW_SERVICES_JANET_SRC = Hardwares/MaestroController/MaestroController.cpp
 
 # Hardware nodes
 export HW_NODES_ALL_SRC		= Hardwares/HMC6343Node.cpp Hardwares/GPSDNode.cpp
 
-export HW_NODES_ASPIRE_SRC 	= Hardwares/ActuatorNodeASPire.cpp Hardwares/CANAISNode.cpp Hardwares/CANSolarTrackerNode.cpp\
-                            	Hardwares/CANWindsensorNode.cpp Hardwares/CANArduinoNode.cpp Hardwares/MarineSensorNode.cpp
+export HW_NODES_ASPIRE_SRC 	= Hardwares/ActuatorNodeASPire.cpp Hardwares/CANAISNode.cpp Hardwares/CANSolarTrackerNode.cpp \
+                            	Hardwares/CANWindsensorNode.cpp Hardwares/CANArduinoNode.cpp Hardwares/MarineSensorNode.cpp \
+                            	Hardwares/CANCurrentSensorNode.cpp
 
 export HW_NODES_JANET_SRC 	= Hardwares/ActuatorNode.cpp Hardwares/CV7Node.cpp Hardwares/ArduinoNode.cpp
 

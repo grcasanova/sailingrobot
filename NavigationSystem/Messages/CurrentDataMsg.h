@@ -16,8 +16,7 @@
 
 #include "MessageBus/Message.h"
 
-/** @todo refactor according to what is being used */
-enum SensedElement : int { NAVIGATION_UNIT = 0, ACTUATOR_UNIT, WINDVANE_ACTUATOR, SAILDRIVE_ACTUATOR, RUDDER_ACTUATOR, UNDEFINED };
+enum SensedElement { SAILDRIVE = 0, WINDWANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT, NAVIGATION_UNIT, UNDEFINED };
 
 class CurrentDataMsg : public Message {
 public:
@@ -33,12 +32,15 @@ public:
 	CurrentDataMsg(MessageDeserialiser deserialiser)
 		:Message(deserialiser)
 	{
+        uint8_t element = 0;
 		if(	!deserialiser.readFloat(m_current) ||
 			!deserialiser.readFloat(m_voltage) ||
-			!deserialiser.readInt(m_element))
+			!deserialiser.readUint8_t(element)
+         )
 		{
 			m_valid = false;
 		}
+ 		m_element = (SensedElement) element;
 	}
 
 	virtual ~CurrentDataMsg() { }
@@ -49,14 +51,15 @@ public:
 	virtual void Serialise(MessageSerialiser& serialiser) const
 	{
 		Message::Serialise(serialiser);
+        
 		serialiser.serialise(m_current);
 		serialiser.serialise(m_voltage);
-		serialiser.serialise(m_element);
+		serialiser.serialise((uint8_t)m_element);
 	}
 
 	float getCurrent() const { return m_current; }
 	float getVoltage() const { return m_voltage; }
-	float getSensedElement() const { return m_element; }
+	SensedElement getSensedElement() const { return m_element; }
 
 private:
 	float m_current;			// in mA

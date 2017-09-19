@@ -2,8 +2,6 @@
  *         Used to control the actuators and send feedback to the navigation unit. 
  *         Uses CAN-bus to receive and send data. 
  * 
- * Developer Notes: Current sensor reading needs to be added (vlon, 20.7.17)
- *
  */
 
 
@@ -11,40 +9,7 @@
 #include <PololuMaestro.h>
 #include <Canbus.h>
 #include <MsgParsing.h>
-
-//Values are taken so the maestro output match the behavior of the radio controller in the motor controllers 
-const int RUDDER_MAESTRO_MAX_TARGET = 1900;
-const int RUDDER_MAESTRO_MIN_TARGET = 1150;
-const int WINGSAIL_MAESTRO_MAX_TARGET = 1950;
-const int WINGSAIL_MAESTRO_MIN_TARGET = 1110;
-
-// A signal of e.g. 1200 matches the target 4800 in the
-// Maestro Configurations
-const int MAESTRO_SIGNAL_MULTIPLIER = 4;
-
-// Rudder should go from -30 to +30 degrees
-// which gives an effective range of 60.
-const int MAX_RUDDER_ANGLE = 30;
-
-//Windsail should go from -13 to 13 degrees
-//range is 26
-const int MAX_WINGSAIL_ANGLE = 13;
-
-const double INT16_SIZE = 65535;
-
-const int RUDDER_MIN_FEEDBACK = 278;
-const int RUDDER_MAX_FEEDBACK = 358;
-const int WINGSAIL_MIN_FEEDBACK =  360;
-const int WINGSAIL_MAX_FEEDBACK = 980;
-
-const int RUDDER_MAESTRO_CHANNEL = 0;
-const int WINGSAIL_MAESTRO_CHANNEL = 2;
-
-const int RUDDER_FEEDBACK_PIN = A6;
-const int WINGSAIL_FEEDBACK_PIN = A4;
-const int RADIO_CONTROLL_OFF_PIN = A8;
-
-
+#include "config.h" ///< changeme!
 
 /* On boards with a hardware serial port available for use, use
 that port to communicate with the Maestro. For other boards,
@@ -64,9 +29,6 @@ MicroMaestro maestro(maestroSerial);
 //MiniMaestro maestro(maestroSerial);
 
 CanbusClass Canbus;
-
-
-
 
 void setup()
 {
@@ -89,13 +51,13 @@ void loop()
 {
   sendArduinoData ();
   checkCanbusFor (50);
+  sendCurrentSensorData ();
+  checkCanbusFor (50);
   sendFeedback ();
-  checkCanbusFor (400); 
- 
+  checkCanbusFor (400);
 }
 
-
-
+///// BUG: why not use build-in map() function?
 float mapInterval(float val, float fromMin, float fromMax, float toMin, float toMax) {
   return (val - fromMin) / (fromMax - fromMin) * (toMax - toMin) + toMin;
 }
@@ -142,16 +104,107 @@ void sendArduinoData (){
     Canbus.SendMessage(&arduinoData);   
 
 }
+
+void sendCurrentSensorData(){
+  /* 
+   *  Read AttoPilot sensors
+   *  
+   *  Developer notes: possible update using internal analog reference at 1.1V
+   */
+  
+  // ------------------- Measurement for the saildrive -------------------
+  int v_raw_saildrive, i_raw_saildrive;
+
+  for(int i = 0; i < SAMPLES_N; i++)
+  {
+    v_raw_saildrive += analogRead(SAILDRIVE_VOLTAGE_PIN);
+    i_raw_saildrive += analogRead(SAILDRIVE_CURRENT_PIN);
+    delay(2);
+  }
+
+  v_raw_saildrive /= SAMPLES_N;
+  i_raw_saildrive /= SAMPLES_N;
+  
+  // Conversion
+  float v_final_saildrive = v_raw_saildrive/49.44; //45 Amp board  
+  float i_final_saildrive = i_raw_saildrive/14.9; //45 Amp board
+
+  // ------------------- Measurement for the actuator unit -------------------
+  int v_raw_actuator_unit, i_raw_actuator_unit;
+
+  for(int i = 0; i < SAMPLES_N; i++)
+  {
+    v_raw_actuator_unit += analogRead(ACTUATOR_UNIT_VOLTAGE_PIN);
+    i_raw_actuator_unit += analogRead(ACTUATOR_UNIT_CURRRENT_PIN);
+    delay(2);
+  }
+
+  v_raw_actuator_unit /= SAMPLES_N;
+  i_raw_actuator_unit /= SAMPLES_N;
+  
+  // Conversion
+  float v_final_actuator_unit = v_raw_actuator_unit/49.44; //45 Amp board  
+  float i_final_actuator_unit = i_raw_actuator_unit/14.9; //45 Amp board
+
+  /*
+   * Read ACS712 sensors
+   */
+   
+  // ------------------- Measurement for the windvane switch -------------------
+  int v_raw_windvane_switch;
+
+  for(int i = 0; i < SAMPLES_N; i++)
+  {
+    v_raw_windvane_switch += analogRead(WINDVANE_SWITCH_VOLTAGE_PIN);
+  }
+
+  v_raw_windvane_switch /= SAMPLES_N;
+  
+  // Conversion
+  // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
+  float v_final_windvane_switch = v_raw_windvane_switch * 4.88; 
+  float i_final_windvane_switch = (v_final_windvane_switch - V_REF) * CURRENT_SENSOR_SENSITIVITY;
+
+  // ------------------- Measurement for the windvane angle -------------------
+  int v_raw_windvane_angle;
+
+  for(int i = 0; i < SAMPLES_N; i++)
+  {
+    v_raw_windvane_angle += analogRead(WINDVANE_ANGLE_VOLTAGE_PIN);
+  }
+
+  v_raw_windvane_angle /= SAMPLES_N;
+  
+  // Conversion
+  // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
+  float v_final_windvane_angle = v_raw_windvane_angle * 4.88; 
+  float i_final_windvane_angle = (v_final_windvane_angle - V_REF) * CURRENT_SENSOR_SENSITIVITY;
+
+  // Craft CAN message
+  CanMsg currentSensorData;
+    currentSensorData.id = 705;
+    currentSensorData.header.ide = 0;
+    currentSensorData.header.length = 7;
+    currentSensorData.data[0] = ;
+    currentSensorData.data[1] = ;
+    currentSensorData.data[2] = 0;
+    currentSensorData.data[3] = 0;
+    currentSensorData.data[4] = 0;
+    currentSensorData.data[5] = 0;
+    currentSensorData.data[6] = 0;
+
+  Canbus.SendMessage(&currentSensorData);
+}
+
 void checkCanbusFor (int timeMs){
   int startTime= millis();
   int timer = 0;
+  
   while (timer < timeMs){
     if (Canbus.CheckForMessages()) {
-    
-    
-    CanMsg msg;
-    Canbus.GetMessage(&msg);
-    processCANMessage (msg);
+      CanMsg msg;
+      Canbus.GetMessage(&msg);
+      processCANMessage (msg);
     }
     timer = millis() - startTime;
   }
