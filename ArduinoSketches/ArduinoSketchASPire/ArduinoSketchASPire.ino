@@ -126,8 +126,9 @@ void sendCurrentSensorData(){
   i_raw_saildrive /= SAMPLES_N;
   
   // Conversion
-  FLOAT v_final_saildrive.num = v_raw_saildrive/49.44; //45 Amp board  
-  FLOAT i_final_saildrive.num = i_raw_saildrive/14.9; //45 Amp board
+  FLOAT v_final_saildrive, i_final_saildrive;
+  v_final_saildrive.num = v_raw_saildrive/49.44; //45 Amp board  
+  i_final_saildrive.num = i_raw_saildrive/14.9; //45 Amp board
 
   // ------------------- Measurement for the actuator unit -------------------
   int v_raw_actuator_unit, i_raw_actuator_unit;
@@ -143,8 +144,9 @@ void sendCurrentSensorData(){
   i_raw_actuator_unit /= SAMPLES_N;
   
   // Conversion
-  FLOAT v_final_actuator_unit.num = v_raw_actuator_unit/49.44; //45 Amp board  
-  FLOAT i_final_actuator_unit.num = i_raw_actuator_unit/14.9; //45 Amp board
+  FLOAT v_final_actuator_unit, i_final_actuator_unit;
+  v_final_actuator_unit.num = v_raw_actuator_unit/49.44; //45 Amp board  
+  i_final_actuator_unit.num = i_raw_actuator_unit/14.9; //45 Amp board
 
   /*
    * Read ACS712 sensors
@@ -162,8 +164,9 @@ void sendCurrentSensorData(){
   
   // Conversion
   // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-  FLOAT v_final_windvane_switch.num = v_raw_windvane_switch * 4.88; 
-  FLOAT i_final_windvane_switch.num = (v_final_windvane_switch - V_REF) / ACS712_MV_PER_AMP;
+  FLOAT v_final_windvane_switch, i_final_windvane_switch;
+  v_final_windvane_switch.num = v_raw_windvane_switch * 4.88; 
+  i_final_windvane_switch.num = (v_final_windvane_switch.num - V_REF) / ACS712_MV_PER_AMP;
 
   // ------------------- Measurement for the windvane angle -------------------
   int v_raw_windvane_angle;
@@ -177,8 +180,9 @@ void sendCurrentSensorData(){
   
   // Conversion
   // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-  FLOAT v_final_windvane_angle.num = v_raw_windvane_angle * 4.88; 
-  FLOAT i_final_windvane_angle.num = (v_final_windvane_angle - V_REF) / ACS712_MV_PER_AMP;
+  FLOAT v_final_windvane_angle, i_final_windvane_angle;
+  v_final_windvane_angle.num = v_raw_windvane_angle * 4.88; 
+  i_final_windvane_angle.num = (v_final_windvane_angle.num - V_REF) / ACS712_MV_PER_AMP;
 
   // Craft CAN message
   CanMsg currentSensorData;
