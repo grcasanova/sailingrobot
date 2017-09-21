@@ -38,7 +38,7 @@ const int RADIO_CONTROLL_OFF_PIN = A8;
 // Voltage and Current sensors constants
 const int SAMPLES_N = 10;
 const int V_REF = 5; // in V
-const int ACS712_CURRENT_SENSOR_SENSITIVITY;
+const int ACS712_MV_PER_AMP = 66; // use 100 for 20A Module and 66 for 30A Module
 
 const int SAILDRIVE_VOLTAGE_PIN = A0;
 const int SAILDRIVE_CURRENT_PIN = A1;

@@ -163,7 +163,7 @@ void sendCurrentSensorData(){
   // Conversion
   // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
   FLOAT v_final_windvane_switch.num = v_raw_windvane_switch * 4.88; 
-  FLOAT i_final_windvane_switch.num = (v_final_windvane_switch - V_REF) * ACS712_CURRENT_SENSOR_SENSITIVITY;
+  FLOAT i_final_windvane_switch.num = (v_final_windvane_switch - V_REF) / ACS712_MV_PER_AMP;
 
   // ------------------- Measurement for the windvane angle -------------------
   int v_raw_windvane_angle;
@@ -178,7 +178,7 @@ void sendCurrentSensorData(){
   // Conversion
   // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
   FLOAT v_final_windvane_angle.num = v_raw_windvane_angle * 4.88; 
-  FLOAT i_final_windvane_angle.num = (v_final_windvane_angle - V_REF) * ACS712_CURRENT_SENSOR_SENSITIVITY;
+  FLOAT i_final_windvane_angle.num = (v_final_windvane_angle - V_REF) / ACS712_MV_PER_AMP;
 
   // Craft CAN message
   CanMsg currentSensorData;
