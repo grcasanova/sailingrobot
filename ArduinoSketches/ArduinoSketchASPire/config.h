@@ -37,15 +37,15 @@ const int RADIO_CONTROLL_OFF_PIN = A8;
 /////////////////// TODO set analog pins! ///////////////////
 // Voltage and Current sensors constants
 const int SAMPLES_N = 10;
-const int V_REF = 2500; // (?) in mA
-const int CURRENT_SENSOR_SENSITIVITY;
+const int V_REF = 5; // in V
+const int ACS712_CURRENT_SENSOR_SENSITIVITY;
 
-const int SAILDRIVE_VOLTAGE_PIN;
-const int SAILDRIVE_CURRENT_PIN;
-const int ACTUATOR_UNIT_VOLTAGE_PIN;
-const int ACTUATOR_UNIT_CURRRENT_PIN;
-const int WINDVANE_SWITCH_VOLTAGE_PIN;
-const int WINDVANE_ANGLE_VOLTAGE_PIN;
+const int SAILDRIVE_VOLTAGE_PIN = A0;
+const int SAILDRIVE_CURRENT_PIN = A1;
+const int ACTUATOR_UNIT_VOLTAGE_PIN = A2;
+const int ACTUATOR_UNIT_CURRRENT_PIN = A3;
+const int WINDVANE_SWITCH_VOLTAGE_PIN = A14;
+const int WINDVANE_ANGLE_VOLTAGE_PIN = A15;
 
 // reference enum
 enum SensedElement { SAILDRIVE = 0, WINDWANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT, NAVIGATION_UNIT, UNDEFINED };

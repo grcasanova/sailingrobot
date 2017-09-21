@@ -8,4 +8,4 @@ This sketch uses the following third-party libraries
 
 * [MaestroController](https://github.com/pololu/maestro-arduino) to interface with Polou servo motors and actuators control boards
 * [SoftwareSerial](https://www.arduino.cc/en/Reference/SoftwareSerial) to allow several connection types (UART, SPI, I2C, ...) using IO pins
-* [CanBus](https://github.com/ohjeongwook/CanBusHacker) the library for communication via CanBus
+* CanBus and MsgParsing are two libraries created ad hoc for this project
