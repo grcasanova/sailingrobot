@@ -1,24 +1,49 @@
+/****************************************************************************************
+*
+* File:
+* 		CANCurrentSensorTest.cpp
+*
+* Purpose:
+*		Integration test for the Current Sensors, tests if we can receive and read the messages from the sensors
+*
+*
+* Developer Notes:
+*
+*
+***************************************************************************************/
 
-
-#include "Hardwares/Adafruit_INA219.h"
+#include "DataBase/DBHandler.h"
+#include "Hardwares/CANCurrentSensorNode.h"
+#include "Messages/CurrentDataMsg.h"
+#include "MessageBus/MessageTypes.h"
+#include "MessageBus/MessageBus.h"
+#include "MessageBus/ActiveNode.h"
 #include "SystemServices/Logger.h"
-#include "SystemServices/Timer.h"
+#include "WorldState/PowerManagerNode.h"
 
+CANService canService;
+DBHandler dbHandler("../asr.db");
+MessageBus msgBus;
+CANCurrentSensorNode* sensorCanNode;
+PowerManagerNode* sensorProc;
 
-int main (){
-	Timer timer;
-	timer.start();
-	Logger::init("CSlog.log");
-	Adafruit_INA219 currentSensor;
-	currentSensor.begin();
+void messageLoop() {
+    msgBus.run();
+}
 
-	while (1){
-	
-		Logger::info ("Current: " + std::to_string(currentSensor.getCurrent_mA()));
-		Logger::info ("Bus voltage: " + std::to_string(currentSensor.getBusVoltage_V()));
-		Logger::info ("Shunt voltage: " + std::to_string(currentSensor.getShuntVoltage_mV()));
-		timer.sleepUntil(1);
-		timer.reset ();
-	}
-	
+int main() {
+  auto future = canService.start();
+
+  sensorCanNode = new CANCurrentSensorNode(msgBus, dbHandler, canService);
+  sensorCanNode->start();
+
+  sensorProc = new PowerManagerNode(msgBus, dbHandler);
+  sensorProc->start();
+
+  std::thread thr(messageLoop);
+  thr.detach();
+  int now;
+  while (true) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+  }
 }

@@ -16,7 +16,7 @@
 
 #include "MessageBus/Message.h"
 
-enum SensedElement { SAILDRIVE = 0, WINDWANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT, NAVIGATION_UNIT, UNDEFINED };
+enum SensedElement : uint8_t { SAILDRIVE, WINDVANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT, UNDEFINED };
 
 class CurrentDataMsg : public Message {
 public:

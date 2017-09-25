@@ -13,6 +13,7 @@
 
 #include "PowerManagerNode.h"
 
+#define DEBUG
 /** @todo tune-up values and set the enum as a class */
 enum MaxCurrent { MAX_CURRENT_SAILDRIVE = 1000, MAX_CURRENT_WINDWANE_SWITCH, MAX_CURRENT_WINDVANE_ANGLE, MAX_CURRENT_ACTUATOR_UNIT, MAX_CURRENT_NAVIGATION_UNIT };
 
@@ -57,30 +58,32 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
 
 #ifdef DEBUG
     // Print sensed element in a human-friendly way
+    std::string elem;
+    
     switch(m_element)
     {
         case SAILDRIVE:
-            char* elem = "saildrive";
+            elem = "saildrive";
             break;
             
         case WINDWANE_SWITCH:
-            char* elem = "windvane switch";
+            elem = "windvane switch";
             break;
             
         case WINDVANE_ANGLE:
-            char* elem = "windvane angle";
+            elem = "windvane angle";
             break;
             
         case ACTUATOR_UNIT:
-            char* elem = "actuator unit";
+            elem = "actuator unit";
             break;
             
         case NAVIGATION_UNIT:
-            char* elem = "navigation unit";
+            elem = "navigation unit";
             break;
         
         default:
-            char* elem = "undefined";
+            elem = "undefined";
             break;
     }
     

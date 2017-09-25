@@ -40,7 +40,7 @@ void CANCurrentSensorNode::processMessage(const Message* message) {
 
 typedef union { float num; unsigned char bytes[4]; } FLOAT;
 
-void CANArduinoNode::processFrame (CanMsg& msg) {
+void CANCurrentSensorNode::processFrame (CanMsg& msg) {
 	FLOAT rawData;
 
 	if (msg.id == 705) {
@@ -58,7 +58,7 @@ void CANArduinoNode::processFrame (CanMsg& msg) {
         m_current = rawData.num;
         
         // Get sensed unit
-        m_element = msg.data[8];
+        m_element = (SensedElement) msg.data[8];
 	}
 }
 
