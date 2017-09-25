@@ -124,6 +124,7 @@ void sendCurrentSensorData(){
    *  
    *  Developer notes: possible update using internal analog reference at 1.1V
    */
+
     case 0:
       // ------------------- Measurement for the saildrive -------------------
       int v_raw_saildrive, i_raw_saildrive;
@@ -210,7 +211,7 @@ void sendCurrentSensorData(){
 
   // Increment index
   index++;
-  
+
   // Craft CAN message
   CanMsg currentSensorData;
     currentSensorData.id = 705;
