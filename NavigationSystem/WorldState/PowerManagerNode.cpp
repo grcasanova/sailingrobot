@@ -66,7 +66,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
             elem = "saildrive";
             break;
             
-        case WINDWANE_SWITCH:
+        case WINDVANE_SWITCH:
             elem = "windvane switch";
             break;
             
@@ -76,10 +76,6 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
             
         case ACTUATOR_UNIT:
             elem = "actuator unit";
-            break;
-            
-        case NAVIGATION_UNIT:
-            elem = "navigation unit";
             break;
         
         default:
@@ -104,7 +100,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
                     // Do smt
                 break;
                 
-            case WINDWANE_SWITCH:
+            case WINDVANE_SWITCH:
                 if(m_current > MAX_CURRENT_WINDWANE_SWITCH)
                 break;
                 
@@ -116,10 +112,6 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
                 if(m_current > MAX_CURRENT_ACTUATOR_UNIT)
                 break;
                 
-            case NAVIGATION_UNIT:
-                if(m_current > MAX_CURRENT_NAVIGATION_UNIT)
-                break;
-            
             default:
                 break;
         }
