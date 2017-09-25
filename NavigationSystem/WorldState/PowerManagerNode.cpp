@@ -29,7 +29,8 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
   }
 
   void PowerManagerNode::updateConfigsFromDB(){
-      m_LoopTime = m_db.retrieveCellAsDouble("config_power_manager","1","loop_time");
+      /** @todo TBD */
+      // m_LoopTime = m_db.retrieveCellAsDouble("config_power_manager","1","loop_time");
   }
 
   bool PowerManagerNode::init() {
@@ -38,6 +39,10 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
   }
 
   void PowerManagerNode::processMessage(const Message* msg) {
+#ifdef DEBUG
+      Logger::info("new NODE message");
+#endif      
+      
     MessageType type = msg->messageType();
     switch (type) {
       case MessageType::CurrentData :

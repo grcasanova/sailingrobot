@@ -41,6 +41,9 @@ void CANCurrentSensorNode::processMessage(const Message* message) {
 typedef union { float num; unsigned char bytes[4]; } FLOAT;
 
 void CANCurrentSensorNode::processFrame (CanMsg& msg) {
+    
+    Logger::info("new CAN message");
+    
 	FLOAT rawData;
 
 	if (msg.id == 705) {
@@ -51,12 +54,16 @@ void CANCurrentSensorNode::processFrame (CanMsg& msg) {
 
         m_voltage = rawData.num;
         
+       Logger::info("voltage %lf", m_voltage); 
+        
         // Parse current
         for(int i = 4; i < 8; i++)
             rawData.bytes[i-4] = msg.data[i];
 
         m_current = rawData.num;
         
+        Logger::info("current %lf", m_current); 
+
         // Get sensed unit
         m_element = (SensedElement) msg.data[8];
 	}

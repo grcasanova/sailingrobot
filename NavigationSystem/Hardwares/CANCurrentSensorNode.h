@@ -26,6 +26,7 @@
 #include "MessageBus/ActiveNode.h"
 #include "Messages/CurrentDataMsg.h"
 #include "SystemServices/Timer.h"
+#include "SystemServices/Logger.h"
 
 const int DATA_OUT_OF_RANGE = -2000;
 
