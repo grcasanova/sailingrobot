@@ -20,6 +20,10 @@ pin 11 to transmit (TX). */
   SoftwareSerial maestroSerial(19, 18); //10, 11 for UNO ||19, 18 for MEGA
 #endif
 
+// Used for current sensors
+enum SensedElement : uint8_t { SAILDRIVE, WINDWANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT };
+static int index = 0;
+
 /* Next, create a Maestro object using the serial port.
 Uncomment one of MicroMaestro or MiniMaestro below depending
 on which one you have. */
@@ -106,132 +110,129 @@ void sendArduinoData (){
 typedef union { float num; unsigned char bytes[4]; } FLOAT;
 
 void sendCurrentSensorData(){
+  uint8_t unit_type;
+  FLOAT voltage_val, current_val;
+
+  // Reset index
+  if(index == 4)
+    index = 0;
+
+  switch(index)
+  {
   /* 
    *  Read AttoPilot sensors
    *  
    *  Developer notes: possible update using internal analog reference at 1.1V
    */
-  
-  // ------------------- Measurement for the saildrive -------------------
-  int v_raw_saildrive, i_raw_saildrive;
+    case 0:
+      // ------------------- Measurement for the saildrive -------------------
+      int v_raw_saildrive, i_raw_saildrive;
+    
+      for(int i = 0; i < SAMPLES_N; i++)
+      {
+        v_raw_saildrive += analogRead(SAILDRIVE_VOLTAGE_PIN);
+        i_raw_saildrive += analogRead(SAILDRIVE_CURRENT_PIN);
+        delay(2);
+      }
+    
+      v_raw_saildrive /= SAMPLES_N;
+      i_raw_saildrive /= SAMPLES_N;
+      
+      // Conversion
+      voltage_val.num = v_raw_saildrive/49.44; //45 Amp board  
+      current_val.num = i_raw_saildrive/14.9; //45 Amp board
+      unit_type = SAILDRIVE;
+    break;
 
-  for(int i = 0; i < SAMPLES_N; i++)
-  {
-    v_raw_saildrive += analogRead(SAILDRIVE_VOLTAGE_PIN);
-    i_raw_saildrive += analogRead(SAILDRIVE_CURRENT_PIN);
-    delay(2);
-  }
+    case 1:
+    
+      // ------------------- Measurement for the actuator unit -------------------
+      int v_raw_actuator_unit, i_raw_actuator_unit;
 
-  v_raw_saildrive /= SAMPLES_N;
-  i_raw_saildrive /= SAMPLES_N;
-  
-  // Conversion
-  FLOAT v_final_saildrive.num = v_raw_saildrive/49.44; //45 Amp board  
-  FLOAT i_final_saildrive.num = i_raw_saildrive/14.9; //45 Amp board
-
-  // ------------------- Measurement for the actuator unit -------------------
-  int v_raw_actuator_unit, i_raw_actuator_unit;
-
-  for(int i = 0; i < SAMPLES_N; i++)
-  {
-    v_raw_actuator_unit += analogRead(ACTUATOR_UNIT_VOLTAGE_PIN);
-    i_raw_actuator_unit += analogRead(ACTUATOR_UNIT_CURRRENT_PIN);
-    delay(2);
-  }
-
-  v_raw_actuator_unit /= SAMPLES_N;
-  i_raw_actuator_unit /= SAMPLES_N;
-  
-  // Conversion
-  FLOAT v_final_actuator_unit.num = v_raw_actuator_unit/49.44; //45 Amp board  
-  FLOAT i_final_actuator_unit.num = i_raw_actuator_unit/14.9; //45 Amp board
+      for(int i = 0; i < SAMPLES_N; i++)
+      {
+        v_raw_actuator_unit += analogRead(ACTUATOR_UNIT_VOLTAGE_PIN);
+        i_raw_actuator_unit += analogRead(ACTUATOR_UNIT_CURRRENT_PIN);
+        delay(2);
+      }
+    
+      v_raw_actuator_unit /= SAMPLES_N;
+      i_raw_actuator_unit /= SAMPLES_N;
+      
+      // Conversion
+      voltage_val.num = v_raw_actuator_unit/49.44; //45 Amp board  
+      current_val.num = i_raw_actuator_unit/14.9; //45 Amp board
+      unit_type = ACTUATOR_UNIT;
+    break;
 
   /*
    * Read ACS712 sensors
    */
+
+   case 2:
    
-  // ------------------- Measurement for the windvane switch -------------------
-  int v_raw_windvane_switch;
+      // ------------------- Measurement for the windvane switch -------------------
+      int v_raw_windvane_switch;
+    
+      for(int i = 0; i < SAMPLES_N; i++)
+      {
+        v_raw_windvane_switch += analogRead(WINDVANE_SWITCH_VOLTAGE_PIN);
+      }
+    
+      v_raw_windvane_switch /= SAMPLES_N;
+      
+      // Conversion
+      // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
+      voltage_val.num = v_raw_windvane_switch * 4.88; 
+      current_val.num = (voltage_val.num - V_REF) / ACS712_MV_PER_AMP;
+      unit_type = WINDVANE_SWITCH;
+    break;
 
-  for(int i = 0; i < SAMPLES_N; i++)
-  {
-    v_raw_windvane_switch += analogRead(WINDVANE_SWITCH_VOLTAGE_PIN);
+    case 3:
+    
+      // ------------------- Measurement for the windvane angle -------------------
+      int v_raw_windvane_angle;
+    
+      for(int i = 0; i < SAMPLES_N; i++)
+      {
+        v_raw_windvane_angle += analogRead(WINDVANE_ANGLE_VOLTAGE_PIN);
+      }
+    
+      v_raw_windvane_angle /= SAMPLES_N;
+      
+      // Conversion
+      // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
+      voltage_val.num = v_raw_windvane_angle * 4.88; 
+      current_val.num = (voltage_val.num - V_REF) / ACS712_MV_PER_AMP;
+      unit_type = WINDVANE_ANGLE;
+    break;
   }
 
-  v_raw_windvane_switch /= SAMPLES_N;
+  // Increment index
+  index++;
   
-  // Conversion
-  // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-  FLOAT v_final_windvane_switch.num = v_raw_windvane_switch * 4.88; 
-  FLOAT i_final_windvane_switch.num = (v_final_windvane_switch - V_REF) / ACS712_MV_PER_AMP;
-
-  // ------------------- Measurement for the windvane angle -------------------
-  int v_raw_windvane_angle;
-
-  for(int i = 0; i < SAMPLES_N; i++)
-  {
-    v_raw_windvane_angle += analogRead(WINDVANE_ANGLE_VOLTAGE_PIN);
-  }
-
-  v_raw_windvane_angle /= SAMPLES_N;
-  
-  // Conversion
-  // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-  FLOAT v_final_windvane_angle.num = v_raw_windvane_angle * 4.88; 
-  FLOAT i_final_windvane_angle.num = (v_final_windvane_angle - V_REF) / ACS712_MV_PER_AMP;
-
   // Craft CAN message
   CanMsg currentSensorData;
     currentSensorData.id = 705;
     currentSensorData.header.ide = 0;
-    currentSensorData.header.length = 32;
-    // Saildrive voltage
-    currentSensorData.data[0] = v_final_saildrive.bytes[0];
-    currentSensorData.data[1] = v_final_saildrive.bytes[1];
-    currentSensorData.data[2] = v_final_saildrive.bytes[2];
-    currentSensorData.data[3] = v_final_saildrive.bytes[3];
+    currentSensorData.header.length = 10;
     
-    // Saildrive current
-    currentSensorData.data[4] = i_final_saildrive.bytes[0];
-    currentSensorData.data[5] = i_final_saildrive.bytes[1];
-    currentSensorData.data[6] = i_final_saildrive.bytes[2];
-    currentSensorData.data[7] = i_final_saildrive.bytes[3];
+    // Sensed voltage
+    currentSensorData.data[0] = voltage_val.bytes[0];
+    currentSensorData.data[1] = voltage_val.bytes[1];
+    currentSensorData.data[2] = voltage_val.bytes[2];
+    currentSensorData.data[3] = voltage_val.bytes[3];
+    
+    // Sensed current
+    currentSensorData.data[4] = current_val.bytes[0];
+    currentSensorData.data[5] = current_val.bytes[1];
+    currentSensorData.data[6] = current_val.bytes[2];
+    currentSensorData.data[7] = current_val.bytes[3];
 
-    // Actuator unit voltage
-    currentSensorData.data[8] = v_final_actuator_unit.bytes[0];
-    currentSensorData.data[9] = v_final_actuator_unit.bytes[1];
-    currentSensorData.data[10] = v_final_actuator_unit.bytes[2];
-    currentSensorData.data[11] = v_final_actuator_unit.bytes[3];
+    // Actuator unit
+    currentSensorData.data[8] = unit_type;
+    currentSensorData.data[9] = 0;
     
-    // Actuator unit current
-    currentSensorData.data[12] = i_final_actuator_unit.bytes[0];
-    currentSensorData.data[13] = i_final_actuator_unit.bytes[1];
-    currentSensorData.data[14] = i_final_actuator_unit.bytes[2];
-    currentSensorData.data[15] = i_final_actuator_unit.bytes[3];
-
-    // Windvane switch voltage
-    currentSensorData.data[16] = v_final_windvane_switch.bytes[0];
-    currentSensorData.data[17] = v_final_windvane_switch.bytes[1];
-    currentSensorData.data[18] = v_final_windvane_switch.bytes[2];
-    currentSensorData.data[19] = v_final_windvane_switch.bytes[3];
-    
-    // Windvane switch current
-    currentSensorData.data[20] = i_final_windvane_switch.bytes[0];
-    currentSensorData.data[21] = i_final_windvane_switch.bytes[1];
-    currentSensorData.data[22] = i_final_windvane_switch.bytes[2];
-    currentSensorData.data[23] = i_final_windvane_switch.bytes[3];
-    
-    // Windvane angle voltage
-    currentSensorData.data[24] = v_final_windvane_angle.bytes[0];
-    currentSensorData.data[25] = v_final_windvane_angle.bytes[1];
-    currentSensorData.data[26] = v_final_windvane_angle.bytes[2];
-    currentSensorData.data[27] = v_final_windvane_angle.bytes[3];
-
-    // Windvane angle current
-    currentSensorData.data[28] = i_final_windvane_angle.bytes[0];
-    currentSensorData.data[29] = i_final_windvane_angle.bytes[1];
-    currentSensorData.data[30] = i_final_windvane_angle.bytes[2];
-    currentSensorData.data[31] = i_final_windvane_angle.bytes[3];
 
   Canbus.SendMessage(&currentSensorData);
 }

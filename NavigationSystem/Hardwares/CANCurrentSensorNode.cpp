@@ -32,22 +32,34 @@ void CANCurrentSensorNode::updateConfigsFromDB() {
 }
 
 void CANCurrentSensorNode::processMessage(const Message* message) {
-
-  std::lock_guard<std::mutex> lock(m_lock);
-
-  if(message->messageType() == MessageType::DataRequest)
-  {
-    // On system startup we won't have any valid data, so don't send any
-    if( m_current != DATA_OUT_OF_RANGE ||  m_voltage != DATA_OUT_OF_RANGE || m_element != UNDEFINED )
-    {
-      MessagePtr currentData = std::make_unique<CurrentDataMsg>(message->sourceID(), this->nodeID(), m_current, m_voltage, m_element);
-      m_MsgBus.sendMessage(std::move(currentData));
-    }
-  }
-  else if(message->messageType() == MessageType::ServerConfigsReceived)
+  if(message->messageType() == MessageType::ServerConfigsReceived)
   {
         updateConfigsFromDB();
   }
+}
+
+typedef union { float num; unsigned char bytes[4]; } FLOAT;
+
+void CANArduinoNode::processFrame (CanMsg& msg) {
+	FLOAT rawData;
+
+	if (msg.id == 705) {
+        
+        // Parse voltage
+        for(int i = 0; i < 4; i++)
+            rawData.bytes[i] = msg.data[i];
+
+        m_voltage = rawData.num;
+        
+        // Parse current
+        for(int i = 4; i < 8; i++)
+            rawData.bytes[i-4] = msg.data[i];
+
+        m_current = rawData.num;
+        
+        // Get sensed unit
+        m_element = msg.data[8];
+	}
 }
 
 void CANCurrentSensorNode::start() {
