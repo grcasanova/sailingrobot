@@ -107,11 +107,9 @@ void sendArduinoData (){
 
 }
 
-typedef union { float num; unsigned char bytes[4]; } FLOAT;
-
 void sendCurrentSensorData(){
   uint8_t unit_type;
-  FLOAT voltage_val, current_val;
+  uint16_t voltage_val, current_val;
 
   // Reset index
   if(index == 4)
@@ -127,7 +125,7 @@ void sendCurrentSensorData(){
 
     case 0:
       // ------------------- Measurement for the saildrive -------------------
-      int v_raw_saildrive, i_raw_saildrive;
+      uint16_t v_raw_saildrive, i_raw_saildrive;
     
       for(int i = 0; i < SAMPLES_N; i++)
       {
@@ -140,15 +138,15 @@ void sendCurrentSensorData(){
       i_raw_saildrive /= SAMPLES_N;
       
       // Conversion
-      voltage_val.num = v_raw_saildrive/49.44; //45 Amp board  
-      current_val.num = i_raw_saildrive/14.9; //45 Amp board
+      voltage_val.num = round(v_raw_saildrive/49.44); //45 Amp board  
+      current_val.num = round(i_raw_saildrive/14.9); //45 Amp board
       unit_type = SAILDRIVE;
     break;
 
     case 1:
     
       // ------------------- Measurement for the actuator unit -------------------
-      int v_raw_actuator_unit, i_raw_actuator_unit;
+      uint16_t v_raw_actuator_unit, i_raw_actuator_unit;
 
       for(int i = 0; i < SAMPLES_N; i++)
       {
@@ -161,8 +159,8 @@ void sendCurrentSensorData(){
       i_raw_actuator_unit /= SAMPLES_N;
       
       // Conversion
-      voltage_val.num = v_raw_actuator_unit/49.44; //45 Amp board  
-      current_val.num = i_raw_actuator_unit/14.9; //45 Amp board
+      voltage_val.num = round(v_raw_actuator_unit/49.44); //45 Amp board  
+      current_val.num = round(i_raw_actuator_unit/14.9); //45 Amp board
       unit_type = ACTUATOR_UNIT;
     break;
 
@@ -173,7 +171,7 @@ void sendCurrentSensorData(){
    case 2:
    
       // ------------------- Measurement for the windvane switch -------------------
-      int v_raw_windvane_switch;
+      uint16_t v_raw_windvane_switch;
     
       for(int i = 0; i < SAMPLES_N; i++)
       {
@@ -184,15 +182,15 @@ void sendCurrentSensorData(){
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val.num = v_raw_windvane_switch * 4.88; 
-      current_val.num = (voltage_val.num - V_REF) / ACS712_MV_PER_AMP;
+      voltage_val.num = round(v_raw_windvane_switch * 4.88); 
+      current_val.num = round((voltage_val.num - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_SWITCH;
     break;
 
     case 3:
     
       // ------------------- Measurement for the windvane angle -------------------
-      int v_raw_windvane_angle;
+      uint16_t v_raw_windvane_angle;
     
       for(int i = 0; i < SAMPLES_N; i++)
       {
@@ -203,8 +201,8 @@ void sendCurrentSensorData(){
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val.num = v_raw_windvane_angle * 4.88; 
-      current_val.num = (voltage_val.num - V_REF) / ACS712_MV_PER_AMP;
+      voltage_val.num = round(v_raw_windvane_angle * 4.88); 
+      current_val.num = round((voltage_val.num - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_ANGLE;
     break;
   }
@@ -216,24 +214,15 @@ void sendCurrentSensorData(){
   CanMsg currentSensorData;
     currentSensorData.id = 705;
     currentSensorData.header.ide = 0;
-    currentSensorData.header.length = 10;
-    
-    // Sensed voltage
-    currentSensorData.data[0] = voltage_val.bytes[0];
-    currentSensorData.data[1] = voltage_val.bytes[1];
-    currentSensorData.data[2] = voltage_val.bytes[2];
-    currentSensorData.data[3] = voltage_val.bytes[3];
-    
-    // Sensed current
-    currentSensorData.data[4] = current_val.bytes[0];
-    currentSensorData.data[5] = current_val.bytes[1];
-    currentSensorData.data[6] = current_val.bytes[2];
-    currentSensorData.data[7] = current_val.bytes[3];
+    currentSensorData.header.length = 7;
 
-    // Actuator unit
-    currentSensorData.data[8] = unit_type;
-    currentSensorData.data[9] = 0;
-    
+    currentSensorData.data[0] = (voltage_val & 0xff);
+    currentSensorData.data[1] = (voltage_val >> 8);
+    currentSensorData.data[2] = (current_val & 0xff);
+    currentSensorData.data[3] = (current_val >> 8);
+    currentSensorData.data[4] = unit_type;
+    currentSensorData.data[5] = 0;
+    currentSensorData.data[6] = 0;
 
   Canbus.SendMessage(&currentSensorData);
 }
