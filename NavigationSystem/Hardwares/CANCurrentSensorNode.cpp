@@ -13,7 +13,7 @@
 
 #include "CANCurrentSensorNode.h"
 
-CANCurrentSensorNode::CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhandler, CANService& can_service)
+CANCurrentSensorNode::CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhandler, CANService& canService)
 : ActiveNode(NodeID::CurrentSensor, msgBus), CANFrameReceiver(canService, {705}), m_LoopTime(0.5), m_db(dbhandler)
 {
     m_current = DATA_OUT_OF_RANGE;

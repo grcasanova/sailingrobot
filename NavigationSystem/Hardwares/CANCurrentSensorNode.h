@@ -34,7 +34,7 @@ const int DATA_OUT_OF_RANGE = -2000;
 class CANCurrentSensorNode : public ActiveNode, public CANFrameReceiver {
 public:
 
-    CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhandler, CANService& can_service);
+    CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhandler, CANService& canService);
     ~CANCurrentSensorNode();
 
 	/* data */
