@@ -138,8 +138,8 @@ void sendCurrentSensorData(){
       i_raw_saildrive /= SAMPLES_N;
       
       // Conversion
-      voltage_val.num = round(v_raw_saildrive/49.44); //45 Amp board  
-      current_val.num = round(i_raw_saildrive/14.9); //45 Amp board
+      voltage_val = round(v_raw_saildrive/49.44); //45 Amp board  
+      current_val = round(i_raw_saildrive/14.9); //45 Amp board
       unit_type = SAILDRIVE;
     break;
 
@@ -159,8 +159,8 @@ void sendCurrentSensorData(){
       i_raw_actuator_unit /= SAMPLES_N;
       
       // Conversion
-      voltage_val.num = round(v_raw_actuator_unit/49.44); //45 Amp board  
-      current_val.num = round(i_raw_actuator_unit/14.9); //45 Amp board
+      voltage_val = round(v_raw_actuator_unit/49.44); //45 Amp board  
+      current_val = round(i_raw_actuator_unit/14.9); //45 Amp board
       unit_type = ACTUATOR_UNIT;
     break;
 
@@ -182,8 +182,8 @@ void sendCurrentSensorData(){
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val.num = round(v_raw_windvane_switch * 4.88); 
-      current_val.num = round((voltage_val.num - V_REF) / ACS712_MV_PER_AMP);
+      voltage_val = round(v_raw_windvane_switch * 4.88); 
+      current_val = round((voltage_val - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_SWITCH;
     break;
 
@@ -201,8 +201,8 @@ void sendCurrentSensorData(){
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val.num = round(v_raw_windvane_angle * 4.88); 
-      current_val.num = round((voltage_val.num - V_REF) / ACS712_MV_PER_AMP);
+      voltage_val = round(v_raw_windvane_angle * 4.88); 
+      current_val = round((voltage_val - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_ANGLE;
     break;
   }
