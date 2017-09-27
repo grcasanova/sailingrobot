@@ -116,6 +116,9 @@ void CANService::run()
           CANFrameReceiver* receiver = receiverIt->second;
           receiver->processFrame(Cmsg);
         }
+        else{
+            Logger::info("Received frame with no registered receiver");
+        }
       }
       else
       {

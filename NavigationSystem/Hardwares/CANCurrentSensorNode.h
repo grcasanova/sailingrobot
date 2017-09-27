@@ -51,7 +51,7 @@ public:
  	///----------------------------------------------------------------------------------
 	virtual bool init() {return true;};
     
-    void processFrame (CanMsg& msg);
+    virtual override void processFrame (CanMsg& msg);
     
 	virtual void processMessage(const Message* message);
 
