@@ -109,10 +109,10 @@ void sendArduinoData (){
 
 void sendCurrentSensorData(){
   uint8_t unit_type;
-  uint16_t voltage_raw, current_raw;
+  uint16_t voltage_raw = 0, current_raw = 0;
   uint16_t voltage_val, current_val;
 
-  switch(index%4)
+  switch(index)
   {
   /* 
    *  Read AttoPilot sensors
@@ -197,7 +197,10 @@ void sendCurrentSensorData(){
   }
 
   // Increment index
-  index++;
+  if(index > 3)
+    index = 0;
+  else
+    index++;
 
   // Craft CAN message
   CanMsg currentSensorData;

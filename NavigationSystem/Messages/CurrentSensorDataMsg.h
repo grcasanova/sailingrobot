@@ -33,9 +33,9 @@ public:
 		:Message(deserialiser)
 	{
         uint8_t element = 0;
-		if(	!deserialiser.readUint16_t(m_current) ||
-			!deserialiser.readUint16_t(m_voltage) ||
-			!deserialiser.readUint8_t(element)
+		if(	!deserialiser.readInt(m_current) ||
+			!deserialiser.readInt(m_voltage) ||
+			!deserialiser.readInt(element)
          )
 		{
 			m_valid = false;
