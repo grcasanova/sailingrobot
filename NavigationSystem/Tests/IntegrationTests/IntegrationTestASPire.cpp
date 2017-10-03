@@ -29,6 +29,7 @@
 #include "Messages/CompassDataMsg.h"
 #include "Messages/GPSDataMsg.h"
 #include "Messages/AISDataMsg.h"
+#include "Messages/CurrentSensorDataMsg.h"
 
 #include "MessageBus/MessageTypes.h"
 #include "MessageBus/MessageBus.h"
@@ -79,6 +80,7 @@ public:
 		msgBus.registerNode(*this, MessageType::CompassData);
 		msgBus.registerNode(*this, MessageType::GPSData);
 		msgBus.registerNode(*this, MessageType::AISData);
+        msgBus.registerNode(*this, MessageType::CurrentSensorData);
 
 		m_SensorValues["Rudder Angle"] = DATA_OUT_OF_RANGE;
 		m_SensorValues["Wingsail Angle"] = DATA_OUT_OF_RANGE;
@@ -94,7 +96,10 @@ public:
 		m_SensorValues["GPS Online"] = DATA_OUT_OF_RANGE;
 		m_SensorValues["AIS Longitude"] = DATA_OUT_OF_RANGE;
 		m_SensorValues["AIS Latitude"] = DATA_OUT_OF_RANGE;
-
+        m_SensorValues["current"] = DATA_OUT_OF_RANGE;
+        m_SensorValues["voltage"] = DATA_OUT_OF_RANGE;
+        m_SensorValues["element"] = DATA_OUT_OF_RANGE;
+        
 		m_Win = newwin(6+2*m_SensorValues.size(),60,1,2);
 
 		box(m_Win,0,0);
@@ -161,6 +166,15 @@ public:
 					const AISDataMsg* aisdata = dynamic_cast<const AISDataMsg*>(message);
 					m_SensorValues["AIS Latitude"] = aisdata->posLat();
 					m_SensorValues["AIS Longitude"] = aisdata->posLon();
+				}
+				break;
+                
+            case MessageType::CurrentSensorData:
+				{
+					const CurrentSensorDataMsg* currentsensordata = dynamic_cast<const CurrentSensorDataMsg*>(message);
+					m_SensorValues["current"] = currentsensordata->getCurrent();
+					m_SensorValues["voltage"] = currentsensordata->getVoltage();
+                    m_SensorValues["element"] = currentsensordata->getSensedElement();
 				}
 				break;
 

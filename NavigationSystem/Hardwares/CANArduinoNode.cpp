@@ -26,7 +26,6 @@ ActiveNode(NodeID::CANArduino, messageBus), CANFrameReceiver(canService, {701,70
 	m_WindvaneActuatorPos = DATA_OUT_OF_RANGE;
 	m_Radio_Controller_On = DATA_OUT_OF_RANGE;
 	messageBus.registerNode(*this, MessageType::ServerConfigsReceived);
-
 }
 
 CANArduinoNode::~CANArduinoNode(){

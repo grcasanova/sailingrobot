@@ -19,15 +19,15 @@ CANCurrentSensorNode::CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhand
     m_current = DATA_OUT_OF_RANGE;
     m_voltage = DATA_OUT_OF_RANGE;
     m_element = UNDEFINED;
-
-  msgBus.registerNode(*this, MessageType::DataRequest);
-  msgBus.registerNode(*this, MessageType::ServerConfigsReceived);
-  updateConfigsFromDB();
+    msgBus.registerNode(*this, MessageType::ServerConfigsReceived);
 }
 
-CANCurrentSensorNode::~CANCurrentSensorNode(){}
+CANCurrentSensorNode::~CANCurrentSensorNode(){
+    
+}
 
-void CANCurrentSensorNode::updateConfigsFromDB() {
+void CANCurrentSensorNode::updateConfigsFromDB() 
+{
    m_LoopTime = m_db.retrieveCellAsDouble("config_can_current_sensors","1","loop_time");
 }
 
@@ -54,7 +54,6 @@ void CANCurrentSensorNode::processFrame (CanMsg& msg) {
 }
 
 void CANCurrentSensorNode::start() {
-    
     runThread(CANCurrentSensorNodeThreadFunc);
 }
 
@@ -66,17 +65,17 @@ void CANCurrentSensorNode::CANCurrentSensorNodeThreadFunc(ActiveNode* nodePtr) {
 
   while(true)
   {
-    node->m_lock.lock();
+      node->m_lock.lock();
 
-    if( not (node->m_current == DATA_OUT_OF_RANGE && node->m_voltage == DATA_OUT_OF_RANGE && node->m_element == UNDEFINED) )
-    {
-        MessagePtr currentData = std::make_unique<CurrentSensorDataMsg>(node->m_current, node->m_voltage, node->m_element);
-        node->m_MsgBus.sendMessage(std::move(currentData));
-    }
-    
-    node->m_lock.unlock();
-
-    timer.sleepUntil(node->m_LoopTime);
-    timer.reset();
+      if( not (node->m_current == DATA_OUT_OF_RANGE && node->m_voltage == DATA_OUT_OF_RANGE && node->m_element == UNDEFINED) )
+      {
+          MessagePtr currentData = std::make_unique<CurrentSensorDataMsg>(node->m_current, node->m_voltage, node->m_element);
+          node->m_MsgBus.sendMessage(std::move(currentData));
+      }
+      
+      node->m_lock.unlock();
+      
+      timer.sleepUntil(node->m_LoopTime);
+      timer.reset();
   }
 }
