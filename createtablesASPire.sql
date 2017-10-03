@@ -137,8 +137,6 @@ CREATE TABLE dataLogs_windsensor (
   t_timestamp  TIMESTAMP
 );
 
-
-
 -- -----------------------------------------------------
 -- Table dataLogs_system
 -- -----------------------------------------------------

@@ -28,7 +28,7 @@ CANCurrentSensorNode::CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhand
 CANCurrentSensorNode::~CANCurrentSensorNode(){}
 
 void CANCurrentSensorNode::updateConfigsFromDB() {
-   m_LoopTime = m_db.retrieveCellAsDouble("config_can_current_sensor","1","loop_time");
+   m_LoopTime = m_db.retrieveCellAsDouble("config_can_current_sensors","1","loop_time");
 }
 
 void CANCurrentSensorNode::processMessage(const Message* message) {

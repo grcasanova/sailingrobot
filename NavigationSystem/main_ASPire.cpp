@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 	  	ActuatorNodeASPire actuators(messageBus, canService);
 	  	CANArduinoNode actuatorFeedback(messageBus, dbHandler, canService);
 
-	  	int miniWaitTime = 20; 	// Periode (in seconds) during witch the measuements are performed.
+	  	int miniWaitTime = 20; 	// Period (in seconds) during witch the measurements are performed.
 	  	MarineSensorNode marineSensors(messageBus, miniWaitTime);
 	#endif
 
