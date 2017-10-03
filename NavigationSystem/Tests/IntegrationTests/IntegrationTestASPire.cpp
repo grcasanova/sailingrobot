@@ -38,6 +38,7 @@
 
 #include "Hardwares/CANWindsensorNode.h"
 #include "Hardwares/CANArduinoNode.h"
+#include "Hardwares/CANCurrentSensorNode.h"
 #include "Hardwares/ActuatorNodeASPire.h"
 #include "Hardwares/HMC6343Node.h"
 #include "Hardwares/GPSDNode.h"
@@ -328,23 +329,24 @@ int main() {
 
 
 	SensorDataReceiver sensorReceiver(msgBus);
-	CANWindsensorNode windSensor(msgBus, dbHandler, canService);
 	HMC6343Node compass(msgBus, dbHandler);
 	compass.init ();
-
-
-
-	CANArduinoNode arduino (msgBus, dbHandler, canService);
-	ActuatorNodeASPire actuators (msgBus, canService);
-	GPSDNode gps (msgBus, dbHandler);
+    
+    GPSDNode gps (msgBus, dbHandler);
 	gps.init();
+    
+	CANWindsensorNode windSensor(msgBus, dbHandler, canService);
+    CANCurrentSensorNode currentSensors(msgBus, dbHandler, canService);
+	CANArduinoNode arduino (msgBus, dbHandler, canService);
 	CANAISNode ais (msgBus, dbHandler, canService);
+	ActuatorNodeASPire actuators (msgBus, canService);
 
 	ais.start();
 	gps.start();
 	windSensor.start();
 	arduino.start ();
 	compass.start ();
+    currentSensors.start();
 
 	std::thread thr(messageLoop);
 	thr.detach();
