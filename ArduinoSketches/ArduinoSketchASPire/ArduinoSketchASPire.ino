@@ -109,13 +109,10 @@ void sendArduinoData (){
 
 void sendCurrentSensorData(){
   uint8_t unit_type;
+  uint16_t voltage_raw, current_raw;
   uint16_t voltage_val, current_val;
 
-  // Reset index
-  if(index == 4)
-    index = 0;
-
-  switch(index)
+  switch(index%4)
   {
   /* 
    *  Read AttoPilot sensors
@@ -124,43 +121,39 @@ void sendCurrentSensorData(){
    */
 
     case 0:
-      // ------------------- Measurement for the saildrive -------------------
-      uint16_t v_raw_saildrive, i_raw_saildrive;
-    
+      // ------------------- Measurement for the saildrive -------------------    
       for(int i = 0; i < SAMPLES_N; i++)
       {
-        v_raw_saildrive += analogRead(SAILDRIVE_VOLTAGE_PIN);
-        i_raw_saildrive += analogRead(SAILDRIVE_CURRENT_PIN);
+        voltage_raw += analogRead(SAILDRIVE_VOLTAGE_PIN);
+        current_raw += analogRead(SAILDRIVE_CURRENT_PIN);
         delay(2);
       }
     
-      v_raw_saildrive /= SAMPLES_N;
-      i_raw_saildrive /= SAMPLES_N;
+      voltage_raw /= SAMPLES_N;
+      current_raw /= SAMPLES_N;
       
       // Conversion
-      voltage_val = round(v_raw_saildrive/49.44); //45 Amp board  
-      current_val = round(i_raw_saildrive/14.9); //45 Amp board
+      voltage_val = round(voltage_raw/49.44); //45 Amp board  
+      current_val = round(current_raw/14.9); //45 Amp board
       unit_type = SAILDRIVE;
     break;
 
     case 1:
     
       // ------------------- Measurement for the actuator unit -------------------
-      uint16_t v_raw_actuator_unit, i_raw_actuator_unit;
-
       for(int i = 0; i < SAMPLES_N; i++)
       {
-        v_raw_actuator_unit += analogRead(ACTUATOR_UNIT_VOLTAGE_PIN);
-        i_raw_actuator_unit += analogRead(ACTUATOR_UNIT_CURRRENT_PIN);
+        voltage_raw += analogRead(ACTUATOR_UNIT_VOLTAGE_PIN);
+        current_raw += analogRead(ACTUATOR_UNIT_CURRRENT_PIN);
         delay(2);
       }
     
-      v_raw_actuator_unit /= SAMPLES_N;
-      i_raw_actuator_unit /= SAMPLES_N;
+      voltage_raw /= SAMPLES_N;
+      current_raw /= SAMPLES_N;
       
       // Conversion
-      voltage_val = round(v_raw_actuator_unit/49.44); //45 Amp board  
-      current_val = round(i_raw_actuator_unit/14.9); //45 Amp board
+      voltage_val = round(voltage_raw/49.44); //45 Amp board  
+      current_val = round(current_raw/14.9); //45 Amp board
       unit_type = ACTUATOR_UNIT;
     break;
 
@@ -170,38 +163,34 @@ void sendCurrentSensorData(){
 
    case 2:
    
-      // ------------------- Measurement for the windvane switch -------------------
-      uint16_t v_raw_windvane_switch;
-    
+      // ------------------- Measurement for the windvane switch -------------------    
       for(int i = 0; i < SAMPLES_N; i++)
       {
-        v_raw_windvane_switch += analogRead(WINDVANE_SWITCH_VOLTAGE_PIN);
+        voltage_raw += analogRead(WINDVANE_SWITCH_VOLTAGE_PIN);
       }
     
-      v_raw_windvane_switch /= SAMPLES_N;
+      voltage_raw /= SAMPLES_N;
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val = round(v_raw_windvane_switch * 4.88); 
+      voltage_val = round(voltage_raw * 4.88); 
       current_val = round((voltage_val - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_SWITCH;
     break;
 
     case 3:
     
-      // ------------------- Measurement for the windvane angle -------------------
-      uint16_t v_raw_windvane_angle;
-    
+      // ------------------- Measurement for the windvane angle -------------------    
       for(int i = 0; i < SAMPLES_N; i++)
       {
-        v_raw_windvane_angle += analogRead(WINDVANE_ANGLE_VOLTAGE_PIN);
+        voltage_raw += analogRead(WINDVANE_ANGLE_VOLTAGE_PIN);
       }
     
-      v_raw_windvane_angle /= SAMPLES_N;
+      voltage_raw /= SAMPLES_N;
       
       // Conversion
       // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
-      voltage_val = round(v_raw_windvane_angle * 4.88); 
+      voltage_val = round(voltage_raw * 4.88); 
       current_val = round((voltage_val - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_ANGLE;
     break;

@@ -13,14 +13,12 @@
 
 #include "PowerManagerNode.h"
 
-#define DEBUG
-
 /** @todo tune-up values and set the enum as a class */
 enum MaxCurrent { MAX_CURRENT_SAILDRIVE = 1000, MAX_CURRENT_WINDWANE_SWITCH, MAX_CURRENT_WINDVANE_ANGLE, MAX_CURRENT_ACTUATOR_UNIT, MAX_CURRENT_NAVIGATION_UNIT };
 
 PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
   : ActiveNode(NodeID::PowerManagerNode, msgBus), m_LoopTime(0.5), m_db(dbhandler) {
-    msgBus.registerNode(*this, MessageType::CurrentData);
+    msgBus.registerNode(*this, MessageType::CurrentSensorData);
     msgBus.registerNode(*this, MessageType::ServerConfigsReceived);
     updateConfigsFromDB();
   }
@@ -30,8 +28,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
   }
 
   void PowerManagerNode::updateConfigsFromDB(){
-      /** @todo TBD */
-      // m_LoopTime = m_db.retrieveCellAsDouble("config_power_manager","1","loop_time");
+      m_LoopTime = m_db.retrieveCellAsDouble("config_power_manager","1","loop_time");
   }
 
   bool PowerManagerNode::init() {
@@ -39,15 +36,11 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     return true;
   }
 
-  void PowerManagerNode::processMessage(const Message* msg) {
-#ifdef DEBUG
-      Logger::info("new NODE message");
-#endif      
-      
+  void PowerManagerNode::processMessage(const Message* msg) {   
     MessageType type = msg->messageType();
     switch (type) {
-      case MessageType::CurrentData :
-        processSensorMessage((CurrentDataMsg*) msg);
+      case MessageType::CurrentSensorData :
+        processSensorMessage((CurrentSensorDataMsg*) msg);
         break;
       case MessageType::ServerConfigsReceived :
         updateConfigsFromDB();
@@ -57,12 +50,11 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     }
   }
 
-  void PowerManagerNode::processSensorMessage(CurrentDataMsg* msg) {
+  void PowerManagerNode::processSensorMessage(CurrentSensorDataMsg* msg) {
     m_current = msg->getCurrent();
     m_voltage = msg->getVoltage();
     m_element = msg->getSensedElement();
 
-#ifdef DEBUG
     // Print sensed element in a human-friendly way
     std::string elem;
     
@@ -89,8 +81,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
             break;
     }
     
-    Logger::info("current %lf (mA) and voltage %lf (mV) for the element %s", m_current, m_voltage, elem);    
-#endif
+    Logger::info("current %d (mA) and voltage %d (mV) for the element %s", m_current, m_voltage, elem);    
   }
   
   void PowerManagerNode::start() {

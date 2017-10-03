@@ -19,7 +19,7 @@
 #include "DataBase/DBHandler.h"
 #include "MessageBus/ActiveNode.h"
 #include "SystemServices/Logger.h"
-#include "Messages/CurrentDataMsg.h"
+#include "Messages/CurrentSensorDataMsg.h"
 
 #include <chrono>
 #include <thread>
@@ -60,7 +60,7 @@ private:
   /*
   * Gets to process the message if the message received comes from the current sensor
   */
-  void processSensorMessage(CurrentDataMsg* msg);
+  void processSensorMessage(CurrentSensorDataMsg* msg);
 
   /*
   * The function that thread works on
@@ -70,8 +70,8 @@ private:
   /*
   * Private variables
   */
-  float m_current;
-  float m_voltage;
+  uint16_t m_current;
+  uint16_t m_voltage;
   SensedElement m_element;
 
   double m_LoopTime;

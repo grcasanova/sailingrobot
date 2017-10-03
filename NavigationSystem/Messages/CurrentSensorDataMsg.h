@@ -18,23 +18,23 @@
 
 enum SensedElement : uint8_t { SAILDRIVE, WINDVANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT, UNDEFINED };
 
-class CurrentDataMsg : public Message {
+class CurrentSensorDataMsg : public Message {
 public:
-	CurrentDataMsg(NodeID destinationID, NodeID sourceID, float current, float voltage, SensedElement element)
-		:Message(MessageType::CurrentData, sourceID, destinationID), m_current(current), m_voltage(voltage), m_element(element) { }
+	CurrentSensorDataMsg(NodeID destinationID, NodeID sourceID, uint16_t current, uint16_t voltage, SensedElement element)
+		:Message(MessageType::CurrentSensorData, sourceID, destinationID), m_current(current), m_voltage(voltage), m_element(element) { }
 
-	CurrentDataMsg(float current, float voltage, SensedElement element)
-		:Message(MessageType::CourseData, NodeID::None, NodeID::None), m_current(current), m_voltage(voltage), m_element(element)
+	CurrentSensorDataMsg(uint16_t current, uint16_t voltage, SensedElement element)
+		:Message(MessageType::CurrentSensorData, NodeID::None, NodeID::None), m_current(current), m_voltage(voltage), m_element(element)
 	{
 
 	}
 
-	CurrentDataMsg(MessageDeserialiser deserialiser)
+	CurrentSensorDataMsg(MessageDeserialiser deserialiser)
 		:Message(deserialiser)
 	{
         uint8_t element = 0;
-		if(	!deserialiser.readFloat(m_current) ||
-			!deserialiser.readFloat(m_voltage) ||
+		if(	!deserialiser.readUint16_t(m_current) ||
+			!deserialiser.readUint16_t(m_voltage) ||
 			!deserialiser.readUint8_t(element)
          )
 		{
@@ -43,7 +43,7 @@ public:
  		m_element = (SensedElement) element;
 	}
 
-	virtual ~CurrentDataMsg() { }
+	virtual ~CurrentSensorDataMsg() { }
 
 	///----------------------------------------------------------------------------------
 	/// Serialises the message into a MessageSerialiser
@@ -57,12 +57,12 @@ public:
 		serialiser.serialise((uint8_t)m_element);
 	}
 
-	float getCurrent() const { return m_current; }
-	float getVoltage() const { return m_voltage; }
+	uint16_t getCurrent() const { return m_current; }
+	uint16_t getVoltage() const { return m_voltage; }
 	SensedElement getSensedElement() const { return m_element; }
 
 private:
-	float m_current;			// in mA
-	float m_voltage;			// in mV
+	uint16_t m_current;			// in mA
+	uint16_t m_voltage;			// in mV
 	SensedElement m_element;    // the element measured
 };

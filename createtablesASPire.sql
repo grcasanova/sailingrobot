@@ -61,10 +61,11 @@ CREATE TABLE dataLogs_course_calculation (
 DROP TABLE IF EXISTS "dataLogs_current_sensors";
 CREATE TABLE dataLogs_current_sensors (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  sensed_current   	FLOAT,
-  sensed_voltage 	FLOAT,
-  sensed_element 	INT,
-  t_timestamp		TIMESTAMP
+  current   	FLOAT,
+  voltage       FLOAT,
+  element 	    INT,
+  element_str   VARCHAR(50),
+  t_timestamp	TIMESTAMP
 );
 
 -- -----------------------------------------------------
@@ -198,6 +199,22 @@ DELETE FROM "dataLogs_wind_state" WHERE ID = OLD.wind_state_id;
 DELETE FROM "dataLogs_windsensor" WHERE ID = OLD.windsensor_id;
 
 END;
+
+-- -----------------------------------------------------
+-- Table communication CAN AIS config
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS "config_can_current_sensors";
+CREATE TABLE config_can_current_sensors (id INTEGER PRIMARY KEY AUTOINCREMENT,
+	loop_time DOUBLE
+);
+
+-- -----------------------------------------------------
+-- Table communication Power Manager active node
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS "config_power_manager";
+CREATE TABLE config_power_manager (id INTEGER PRIMARY KEY AUTOINCREMENT,
+	loop_time DOUBLE
+);
 
 -- -----------------------------------------------------
 -- Table communication CAN AIS config

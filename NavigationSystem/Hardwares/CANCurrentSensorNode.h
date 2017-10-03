@@ -24,7 +24,7 @@
 #include "DataBase/DBHandler.h"
 #include "Hardwares/CAN_Services/CANService.h"
 #include "MessageBus/ActiveNode.h"
-#include "Messages/CurrentDataMsg.h"
+#include "Messages/CurrentSensorDataMsg.h"
 #include "SystemServices/Timer.h"
 #include "SystemServices/Logger.h"
 
@@ -61,8 +61,8 @@ private:
 
 	static void CANCurrentSensorNodeThreadFunc(ActiveNode* nodePtr);
 
-	float m_current;			// in mA
-	float m_voltage;			// in mV
+	uint16_t m_current;			// in mA
+	uint16_t m_voltage;			// in mV
 	SensedElement m_element;    // the element measured
 	double m_LoopTime;			// in seconds
 	DBHandler& m_db;
