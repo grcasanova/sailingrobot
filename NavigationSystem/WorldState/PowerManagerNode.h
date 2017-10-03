@@ -73,6 +73,7 @@ private:
   uint16_t m_current;
   uint16_t m_voltage;
   SensedElement m_element;
+  std::string m_element_str;
 
   double m_LoopTime;
   std::mutex m_lock;

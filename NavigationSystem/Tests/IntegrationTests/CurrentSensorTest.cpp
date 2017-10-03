@@ -14,7 +14,7 @@
 
 #include "DataBase/DBHandler.h"
 #include "Hardwares/CANCurrentSensorNode.h"
-#include "Messages/CurrentDataMsg.h"
+#include "Messages/CurrentSensorDataMsg.h"
 #include "MessageBus/MessageTypes.h"
 #include "MessageBus/MessageBus.h"
 #include "MessageBus/ActiveNode.h"

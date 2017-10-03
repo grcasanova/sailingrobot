@@ -33,9 +33,9 @@ public:
 		:Message(deserialiser)
 	{
         uint8_t element = 0;
-		if(	!deserialiser.readInt(m_current) ||
-			!deserialiser.readInt(m_voltage) ||
-			!deserialiser.readInt(element)
+		if(	!deserialiser.readUint16_t(m_current) ||
+			!deserialiser.readUint16_t(m_voltage) ||
+			!deserialiser.readUint8_t(element)
          )
 		{
 			m_valid = false;
@@ -60,7 +60,36 @@ public:
 	uint16_t getCurrent() const { return m_current; }
 	uint16_t getVoltage() const { return m_voltage; }
 	SensedElement getSensedElement() const { return m_element; }
-
+    std::string getSensedElementStr()
+    {
+        std::string elem;
+        
+        switch(m_element)
+        {
+            case SAILDRIVE:
+                elem = "saildrive";
+                break;
+                
+            case WINDVANE_SWITCH:
+                elem = "windvane switch";
+                break;
+                
+            case WINDVANE_ANGLE:
+                elem = "windvane angle";
+                break;
+                
+            case ACTUATOR_UNIT:
+                elem = "actuator unit";
+                break;
+            
+            default:
+                elem = "undefined";
+                break;
+        }
+        
+        return elem;
+    }
+    
 private:
 	uint16_t m_current;			// in mA
 	uint16_t m_voltage;			// in mV

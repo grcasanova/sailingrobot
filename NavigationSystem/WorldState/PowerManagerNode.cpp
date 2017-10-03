@@ -12,6 +12,7 @@
 ***************************************************************************************/
 
 #include "PowerManagerNode.h"
+#include <inttypes.h>
 
 /** @todo tune-up values and set the enum as a class */
 enum MaxCurrent { MAX_CURRENT_SAILDRIVE = 1000, MAX_CURRENT_WINDWANE_SWITCH, MAX_CURRENT_WINDVANE_ANGLE, MAX_CURRENT_ACTUATOR_UNIT, MAX_CURRENT_NAVIGATION_UNIT };
@@ -54,34 +55,9 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     m_current = msg->getCurrent();
     m_voltage = msg->getVoltage();
     m_element = msg->getSensedElement();
-
-    // Print sensed element in a human-friendly way
-    std::string elem;
+    m_element_str = msg->getSensedElementStr();
     
-    switch(m_element)
-    {
-        case SAILDRIVE:
-            elem = "saildrive";
-            break;
-            
-        case WINDVANE_SWITCH:
-            elem = "windvane switch";
-            break;
-            
-        case WINDVANE_ANGLE:
-            elem = "windvane angle";
-            break;
-            
-        case ACTUATOR_UNIT:
-            elem = "actuator unit";
-            break;
-        
-        default:
-            elem = "undefined";
-            break;
-    }
-    
-    Logger::info("current %d (mA) and voltage %d (mV) for the element %s", m_current, m_voltage, elem);    
+    Logger::info("current %" PRIu16 " (mA) and voltage %" PRIu16 " (mV) for the element %s", m_current, m_voltage, m_element_str.c_str());    
   }
   
   void PowerManagerNode::start() {
