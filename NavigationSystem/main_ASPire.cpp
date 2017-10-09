@@ -45,7 +45,7 @@ enum class NodeImportance {
 
 
 ///----------------------------------------------------------------------------------
-/// Initialises a node and shutsdown the program if a critical node fails.
+/// Initialises a node and shuts down the program if a critical node fails.
 ///
 /// @param node 			A pointer to the node to initialise
 /// @param nodeName 		A string name of the node, for logging purposes.

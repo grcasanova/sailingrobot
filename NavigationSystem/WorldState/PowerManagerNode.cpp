@@ -56,38 +56,44 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
     m_voltage = msg->getVoltage();
     m_element = msg->getSensedElement();
     m_element_str = msg->getSensedElementStr();
-    
-    Logger::info("current %" PRIu16 " (mA) and voltage %" PRIu16 " (mV) for the element %s", m_current, m_voltage, m_element_str.c_str());    
   }
   
   void PowerManagerNode::start() {
     runThread(PowerManagerNodeThreadFunc);
   }
   
-  /** @todo to be implemented */
   void PowerManagerNode::checkCurrentLimits() {
+      bool err = 0;
+      
       switch(m_element)
         {
             case SAILDRIVE:
                 if(m_current > MAX_CURRENT_SAILDRIVE)
-                    // Do smt
+                    err = 1
                 break;
                 
             case WINDVANE_SWITCH:
                 if(m_current > MAX_CURRENT_WINDWANE_SWITCH)
+                    err = 1;
                 break;
                 
             case WINDVANE_ANGLE:
                 if(m_current > MAX_CURRENT_WINDVANE_ANGLE)
+                    err = 1;
                 break;
                 
             case ACTUATOR_UNIT:
                 if(m_current > MAX_CURRENT_ACTUATOR_UNIT)
+                    err = 1;
                 break;
                 
             default:
                 break;
         }
+        
+        /** @todo disable load mosfet? */
+        if(err)
+            Logger::error("current burn-out detected on the element %s", m_element_str.c_str());
   }
 
   void PowerManagerNode::PowerManagerNodeThreadFunc(ActiveNode* nodePtr) {

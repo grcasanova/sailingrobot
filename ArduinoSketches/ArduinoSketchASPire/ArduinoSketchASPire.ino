@@ -1,12 +1,20 @@
 /*Purpose: Main Arduino file for the actuator unit. 
  *         Used to control the actuators and send feedback to the navigation unit. 
  *         Uses CAN-bus to receive and send data. 
+ *         
+ *         Notes:
+ *                Messages can only be of 8 bytes!
+ *                Little endian - big endian problems may arise if using non-standard int types
+ *                Improper alimentation may lead to trasmission errors
+ *                Configuration macros are to be stored in the config.h file for conveniency and maintainability
+ *                Watchdog prevents uC halting problems due to possible invalid Can frames being received
  * 
  */
 #include <SoftwareSerial.h>
 #include <PololuMaestro.h>
 #include <Canbus.h>
 #include <MsgParsing.h>
+#include <avr/wdt.h>
 #include "config.h"
 
 /* On boards with a hardware serial port available for use, use
@@ -34,7 +42,6 @@ CanbusClass Canbus;
 
 void setup()
 {
-  
   pinMode(RUDDER_FEEDBACK_PIN, INPUT);
   pinMode(WINGSAIL_FEEDBACK_PIN, INPUT);
   pinMode (RADIO_CONTROLL_OFF_PIN, INPUT);
@@ -45,18 +52,25 @@ void setup()
   if(Canbus.Init(0)) {
     Serial.println("CAN bus initialized.");
   }
+  // Enable the watchdog
+  wdt_enable(WDTO_4S);
  
-  Serial.println("SETUP COMPLETE");  
+  Serial.println("SETUP COMPLETE");
 }
 
 void loop()
 {
   sendArduinoData ();
   checkCanbusFor (50);
+  wdt_reset();
+  
   sendCurrentSensorData ();
   checkCanbusFor (50);
+  wdt_reset();
+  
   sendFeedback ();
   checkCanbusFor (400);
+  wdt_reset();
 }
 
 ///// BUG: why not use build-in map() function?
@@ -107,10 +121,12 @@ void sendArduinoData (){
 
 }
 
-void sendCurrentSensorData(){
+void sendCurrentSensorData(){ // in mV and mA stored in two 16 bit integer vars
   uint8_t unit_type;
   uint16_t voltage_raw = 0, current_raw = 0;
-  uint16_t voltage_val, current_val;
+  uint16_t voltage_val = 0, current_val = 0;
+
+  // TODO: refactor redundant code
 
   switch(index)
   {
@@ -133,8 +149,8 @@ void sendCurrentSensorData(){
       current_raw /= SAMPLES_N;
       
       // Conversion
-      voltage_val = round(voltage_raw/49.44); //45 Amp board  
-      current_val = round(current_raw/14.9); //45 Amp board
+      voltage_val = round((voltage_raw/49.44)*1000); //45 Amp board  
+      current_val = round((current_raw/14.9)*1000); //45 Amp board
       unit_type = SAILDRIVE;
     break;
 
@@ -152,8 +168,8 @@ void sendCurrentSensorData(){
       current_raw /= SAMPLES_N;
       
       // Conversion
-      voltage_val = round(voltage_raw/49.44); //45 Amp board  
-      current_val = round(current_raw/14.9); //45 Amp board
+      voltage_val = round((voltage_raw/49.44)*1000);
+      current_val = round((current_raw/14.9)*1000);
       unit_type = ACTUATOR_UNIT;
     break;
 
@@ -188,8 +204,6 @@ void sendCurrentSensorData(){
     
       voltage_raw /= SAMPLES_N;
       
-      // Conversion
-      // The on-board ADC is 10-bits -> 2^10 = 1024 -> 5V / 1024 ~= 4.88mV
       voltage_val = round(voltage_raw * 4.88); 
       current_val = round((voltage_val - V_REF) / ACS712_MV_PER_AMP);
       unit_type = WINDVANE_ANGLE;
