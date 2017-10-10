@@ -212,7 +212,7 @@ public:
 		}
 
 		wrefresh(m_Win);
-	}  sensorCanNode->start();
+	}
 
 
 	SensorData getValues() {
@@ -318,8 +318,7 @@ int main() {
 		Logger::info("Database Handler init\t\t[OK]");
 	}
 	else
-	{  sensorCanNode->start();
-
+	{
 		Logger::error("Database Handler init\t\t[FAILED]");
 		Logger::shutdown();
 		exit(1);
