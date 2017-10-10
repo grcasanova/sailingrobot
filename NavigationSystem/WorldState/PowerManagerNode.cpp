@@ -69,7 +69,7 @@ PowerManagerNode::PowerManagerNode(MessageBus& msgBus, DBHandler& dbhandler)
         {
             case SAILDRIVE:
                 if(m_current > MAX_CURRENT_SAILDRIVE)
-                    err = 1
+                    err = 1;
                 break;
                 
             case WINDVANE_SWITCH:
