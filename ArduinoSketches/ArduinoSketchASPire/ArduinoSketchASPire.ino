@@ -29,7 +29,7 @@ pin 11 to transmit (TX). */
 #endif
 
 // Used for current sensors
-enum SensedElement : uint8_t { SAILDRIVE, WINDVANE_SWITCH, WINDVANE_ANGLE, ACTUATOR_UNIT };
+enum SensedElement : uint8_t { SAILDRIVE = 1, WINDVANE_SWITCH = 2, WINDVANE_ANGLE = 3, ACTUATOR_UNIT = 4 };
 static int index = 0;
 
 /* Next, create a Maestro object using the serial port.

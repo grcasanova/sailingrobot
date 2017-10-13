@@ -18,7 +18,7 @@ CANCurrentSensorNode::CANCurrentSensorNode(MessageBus& msgBus, DBHandler& dbhand
 {
     m_current = DATA_OUT_OF_RANGE;
     m_voltage = DATA_OUT_OF_RANGE;
-    m_element = UNDEFINED;
+    m_element = (SensedElement) UNDEFINED;
     msgBus.registerNode(*this, MessageType::ServerConfigsReceived);
 }
 

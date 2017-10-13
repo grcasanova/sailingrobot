@@ -29,7 +29,7 @@
 #include "SystemServices/Logger.h"
 
 const int DATA_OUT_OF_RANGE = -2000;
-
+const int UNDEFINED = -1;
 
 class CANCurrentSensorNode : public ActiveNode, public CANFrameReceiver {
 public:
