@@ -31,7 +31,7 @@
 //#include "MessageBus/MessageBus.h"
 //#include "MessageBus/ActiveNode.h"
 #include "SystemServices/Logger.h"
-//#include "WorldState/CollidableMgr/CollidableMgr.h"
+#include "WorldState/CollidableMgr/CollidableMgr.h"
 
 using namespace std;
 using namespace cv;
@@ -48,7 +48,7 @@ const int heightFrame = 195;
 
 //DBHandler dbHandler("../asr.db");
 //MessageBus msgBus;
-//CollidableMgr cMgr;
+CollidableMgr cMgr;
 struct Compass
 {
     float roll = 0;
@@ -60,17 +60,24 @@ struct Compass
 //    msgBus.run();
 //}
 
-int main()
+int main(int argc, char *argv[])
 {
     Logger::init("ObstacleDetectionTest.log");
 
-//    cMgr.startGC();
+    if(argc < 2)
+    {
+        Logger::error("not enough arguments");
+
+        return -1; // exit
+    }
+  
+    cMgr.startGC();
 
 //    std::thread thr(messageLoop);
 //    thr.detach();
 //    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
-    VideoCapture m_capture(0); // Opens the camera handle
+    VideoCapture m_capture(argv[1]); // Opens the camera handle
     if (m_capture.isOpened() == false) //  To check if object was associated to webcam successfully
     {
         Logger::error("Camera not available");
@@ -288,7 +295,7 @@ int main()
 
             // float bearing = col*webcamAngleApertureXPerPixel m_compass_data.heading;
 
-            // collidableMgr->addVisualObstacle(row, bearing);
+            // collidableMgr->addVisualObstacle(row, bearing, freeSpace);
         }
 
         imwrite("roiImg2.jpg", roi);
