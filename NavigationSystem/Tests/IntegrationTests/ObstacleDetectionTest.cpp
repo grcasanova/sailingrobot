@@ -292,14 +292,30 @@ int main(int argc, char *argv[])
             do{
                 row--;
             }while(roi.at<unsigned char>(row,col) != 255);
-
-            // float bearing = col*webcamAngleApertureXPerPixel m_compass_data.heading;
-
-            // collidableMgr->addVisualObstacle(row, bearing, freeSpace);
         }
 
         imwrite("roiImg2.jpg", roi);
-
+        
+        /*
+         * -----------------------------------------------------------------
+         * Push detected objects to the Collidable Manager
+         *-----------------------------------------------------------------
+         */
+        
+        // % free space | bearing
+        float bearing;
+        for (int col = roi.cols-1; col>=0; col--)
+        {
+            int current_row = 0;
+            do{
+                if(roi.at<unsigned char>(current_row,col) == 255)
+                {
+                    bearing = col*webcamAngleApertureXPerPixel*m_compass_data.heading;
+                    // collidableMgr->addVisualObstacle(row, bearing, freeSpace);
+                }
+                current_row++;
+            }while(current_row < roi.rows-1);
+        }
     }
 
     Logger::error("exited loop");
