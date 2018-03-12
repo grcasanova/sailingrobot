@@ -27,9 +27,9 @@
 #include "SystemServices/SysClock.h"
 #include "SystemServices/Timer.h"
 //#include "DataBase/DBHandler.h"
-//#include "MessageBus/MessageTypes.h"
-//#include "MessageBus/MessageBus.h"
-//#include "MessageBus/ActiveNode.h"
+#include "MessageBus/MessageTypes.h"
+#include "MessageBus/MessageBus.h"
+#include "MessageBus/ActiveNode.h"
 #include "SystemServices/Logger.h"
 #include "WorldState/CollidableMgr/CollidableMgr.h"
 
@@ -47,7 +47,7 @@ const int lowFrameY = 30;
 const int heightFrame = 195;
 
 //DBHandler dbHandler("../asr.db");
-//MessageBus msgBus;
+MessageBus msgBus;
 CollidableMgr cMgr;
 struct Compass
 {
@@ -56,9 +56,9 @@ struct Compass
     int tmsp = 0;
 } m_compass_data;
 
-//void messageLoop() {
-//    msgBus.run();
-//}
+void messageLoop() {
+    msgBus.run();
+}
 
 int main(int argc, char *argv[])
 {
@@ -73,9 +73,9 @@ int main(int argc, char *argv[])
   
     cMgr.startGC();
 
-//    std::thread thr(messageLoop);
-//    thr.detach();
-//    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::thread thr(messageLoop);
+    thr.detach();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     VideoCapture m_capture(argv[1]); // Opens the camera handle
     if (m_capture.isOpened() == false) //  To check if object was associated to webcam successfully
@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
     // Image containers
     Mat frameGrayScale, roi, dst, cdst;
 
+    bool isFrameCorrected = false; // flag to store if frame tilt correction was performed
+    
     // Noise removal kernel for the filters
     Mat kernel_ero = getStructuringElement(MORPH_RECT, Size(2,2));
 
@@ -137,6 +139,8 @@ int main(int argc, char *argv[])
             rot.at<double>(1,2) += imageBox.height/2.0 - center.y;
             // Perform rotation
             warpAffine(imgOriginal, imgOriginal, rot, imageBox.size());
+            
+            isFrameCorrected = true;
         }
 
         /*
@@ -201,6 +205,7 @@ int main(int argc, char *argv[])
 
         HoughLinesP(dst, lines, 1, CV_PI/180, 50, 50, 10 );
         double theta1, theta2, hyp;
+        float horizon_angle = 0;
 
         // Horizon
         Vec4i max_l;
@@ -232,9 +237,25 @@ int main(int argc, char *argv[])
             {
                 max_l = l;
                 max_dist = hyp;
+                horizon_angle = angle;
             }
         }
 
+        if(isFrameCorrected == false && horizon_angle != 0)
+        {
+            // Create the rotation matrix
+            rot = getRotationMatrix2D(center, horizon_angle, 1.0);
+            // Determine bounding rectangle
+            imageBox = RotatedRect(center, imgOriginal.size(), horizon_angle).boundingRect();
+            // Adjust transformation matrix
+            rot.at<double>(0,2) += imageBox.width/2.0 - center.x;
+            rot.at<double>(1,2) += imageBox.height/2.0 - center.y;
+            // Perform rotation
+            warpAffine(imgOriginal, imgOriginal, rot, imageBox.size());
+            
+            isFrameCorrected = true;
+        }
+        
         // show lines found
         line( cdst, Point(max_l[0], max_l[1]), Point(max_l[2], max_l[3]), Scalar(255,0,0), 3, LINE_AA);
         // Save intermediary result for debugging purposes
@@ -303,6 +324,7 @@ int main(int argc, char *argv[])
          */
         
         // % free space | bearing
+        /*
         float bearing;
         for (int col = roi.cols-1; col>=0; col--)
         {
@@ -316,6 +338,7 @@ int main(int argc, char *argv[])
                 current_row++;
             }while(current_row < roi.rows-1);
         }
+        */
     }
 
     Logger::error("exited loop");
